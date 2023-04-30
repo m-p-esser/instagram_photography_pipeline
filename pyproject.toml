@@ -1,0 +1,34 @@
+[tool.poetry]
+name = "instagram_photography_pipeline"
+version = "0.1.0"
+description = ""
+authors = ["Marc-Philipp Esser <m-esser@mail.de>"]
+readme = "README.md"
+packages = [
+   {include = "src/instagram"},
+   {include = "src/utils"}
+]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+requests = "^2.28.2"
+prefect = "^2.10.4"
+prefect-gcp = "^0.4.0"
+gcsfs = "^2023.4.0"
+python-dotenv = "^1.0.0"
+instagrapi = "^1.17.6"
+pillow = "^9.5.0"
+
+[tool.poetry.dev-dependencies]
+black = "*"
+flake8 = "*"
+pre-commit = "*"
+isort = "*"
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.22.0"
+pytest = "^7.3.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
