@@ -1,15 +1,17 @@
 import json
 
+from google.cloud import storage
 from instagrapi import Client
 from instagrapi.types import HttpUrl, User
 from prefect import flow, get_run_logger, task
 from prefect.blocks.system import Secret
-from prefect.filesystems import LocalFileSystem
+from prefect.filesystems import GCS, LocalFileSystem
 from prefect_gcp import GcpCredentials
+from prefect_gcp.cloud_storage import cloud_storage_upload_blob_from_string
 
 from src.instagram import challenge_resolver
-from src.utils import serializer
 from src.utils.config import InstagramRequestParams
+from src.utils.serializer import CustomJSONEncoder
 
 
 @task
@@ -49,8 +51,19 @@ def get_user_data(client: Client, config: InstagramRequestParams) -> list[User]:
 
 @task
 def store_user_data_in_gcs(users: list[User]):
+    # Load Credentials
+    gcp_credentials = GcpCredentials.load("instagram-prefect-sa")
+    project_id = gcp_credentials.project
+
+    # Init Client
+    client = storage.Client(project=project_id)
+    gcs_bucket = client.get_bucket("instagram-raw")
+    blob = gcs_bucket.blob("test.json")
+
+    # Store Data in GCS Bucket
     for i in users:
-        print(i)
+        user_json_string = json.dumps(i, cls=CustomJSONEncoder)
+        blob.upload_from_string(data=user_json_string, content_type="application/json")
 
 
 @flow(name="Get Raw User Data", log_prints=True)
