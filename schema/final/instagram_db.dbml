@@ -27,11 +27,11 @@ Table USER.user {
   updated_at "datetime default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP" [not null, note:'update time']
 
   indexes {
-    user_name
-    account_type_id
-    full_name
-    created_at
-    updated_at
+    user_name [name: 'user_name_index']
+    account_type_id [name: 'account_type_index']
+    full_name [name: 'full_name_index']
+    created_at [name: 'created_at_index']
+    updated_at [name: 'updated_at_index']
   }
 
 }
@@ -52,10 +52,10 @@ Table USER.user_profile_setting {
   updated_at "datetime default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP" [not null, note:'update time']
 
   indexes {
-    (has_bio, bio)
-    is_private
-    created_at
-    updated_at  
+    (has_bio, bio) [name: 'has_bio_bio_index']
+    is_private [name: 'is_privat_index']
+    created_at [name: 'created_at_index']
+    updated_at [name: 'updated_at_index']
   }
 
 }
@@ -74,8 +74,8 @@ Table USER.user_contact_details {
   updated_at "datetime default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP" [not null, note:'update time']
 
   indexes {
-    created_at
-    updated_at
+    created_at [name: 'created_at_index']
+    updated_at [name: 'updated_at_index']
   }
 
 }
@@ -96,10 +96,10 @@ Table USER.user_adress {
   updated_at "datetime default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP" [not null, note:'update time']
 
   indexes {
-    location_id
-    (country, city)
-    created_at
-    updated_at
+    location_id [name: 'location_id_index']
+    (country, city) [name: 'country_city_index']
+    created_at [name: 'created_at_index']
+    updated_at [name: 'updated_at_index']
   }
 
 }
@@ -110,7 +110,7 @@ Table USER.account_type {
   account_type varchar(255) [not null]
 
   indexes {
-    account_type [unique]
+    account_type [unique, name: 'account_type_index']
   }
 }
 
@@ -120,7 +120,7 @@ Table USER.follower {
   follower_id integer [not null, note: "User which is following the account"]
 
   indexes {
-    (user_id, follower_id) [pk]
+    (user_id, follower_id) [pk] //, name: 'user_id_follower_id_index']
   }
 
 }
@@ -144,10 +144,10 @@ Table LOCATION.location {
   updated_at "datetime default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP" [not null, note:'update time']
 
   indexes {
-    name
-    (country, city)
-    created_at
-    updated_at    
+    name [name: 'name_index']
+    (country, city) [name: 'country_city_index']
+    created_at [name: 'created_at_index']
+    updated_at [name: 'updated_at_index']
   }
 
 }
@@ -164,8 +164,8 @@ Table LOCATION.location_contact_details {
   updated_at "datetime default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP" [not null, note:'update time']
 
   indexes {
-    created_at
-    updated_at  
+    created_at [name: 'created_at_index']
+    updated_at [name: 'updated_at_index']
   }
 }
 
@@ -191,13 +191,13 @@ Table MEDIA.story {
   updated_at "datetime default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP" [not null, note:'update time']
 
   indexes {
-    user_id
-    media_id
-    media_type_id
-    video_duration_seconds
-    publication_datetime
-    created_at
-    updated_at
+    user_id [name: 'user_id_index']
+    media_id [name: 'media_id_index']
+    media_type_id [name: 'media_type_id_index']
+    video_duration_seconds [name: 'video_duration_seconds_index']
+    publication_datetime [name: 'publication_datetime_index']
+    created_at [name: 'created_at_index']
+    updated_at [name: 'updated_at_index']
   }
 }
 
@@ -208,7 +208,7 @@ Table MEDIA.story_mention {
   is_sponsor bool [not null, default: False]
 
   indexes {
-    (story_id, user_id) [pk]
+    (story_id, user_id) [pk ] //, name: 'story_id_user_id_index']
   }
 }
 
@@ -218,7 +218,7 @@ Table MEDIA.story_location {
   location_id integer [not null]
 
   indexes {
-    (story_id, location_id) [pk]
+    (story_id, location_id) [pk] //, name: 'story_id_location_id_index']
   }
 }
 
@@ -228,7 +228,7 @@ TABLE MEDIA.story_hashtag {
   hashtag_id integer [not null]
 
   indexes {
-    (story_id, hashtag_id) [pk]
+    (story_id, hashtag_id) [pk] //, name: 'story_id_hashtag_id_index']
   }
 }
 
@@ -238,7 +238,7 @@ Table MEDIA.story_media {
   media_id integer [not null]
 
   indexes {
-    (story_id, media_id) [pk]
+    (story_id, media_id) [pk] //, name: 'story_id_media_id_index']
   }
 }
 
@@ -264,13 +264,13 @@ Table MEDIA.media {
   updated_at "datetime default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP" [not null, note:'update time']
 
   indexes {
-    user_id
-    location_id
-    media_type_id
-    video_duration_seconds
-    publication_datetime
-    created_at
-    updated_at
+    user_id [name: 'user_id_index']
+    location_id [name: 'location_id_index']
+    media_type_id [name: 'media_type_id_index']
+    video_duration_seconds [name: 'video_duration_seconds_index']
+    publication_datetime [name: 'publication_datetime_index']
+    created_at [name: 'created_at_index']
+    updated_at [name: 'updated_at_index']
   }
 
 }
@@ -281,7 +281,7 @@ Table MEDIA.media_usertag {
   user_id integer [not null]
 
   indexes {
-    (media_id, user_id) [pk]
+    (media_id, user_id) [pk] //, 'media_id_user_id_index']
   }
 
 }
@@ -292,7 +292,7 @@ Table MEDIA.media_hashtag {
   hashtag_id integer [not null]
 
   indexes {
-    (media_id, hashtag_id) [pk]
+    (media_id, hashtag_id) [pk] //, 'media_id_hashtag_id_index']
   }
 
 }
@@ -303,7 +303,7 @@ Table MEDIA.media_sponsor {
   user_id integer [not null]
 
   indexes {
-    (media_id, user_id) [pk]
+    (media_id, user_id) [pk] //, name, 'media_id_user_id_index']
   }
 
 }
@@ -316,7 +316,7 @@ Table MEDIA.media_type {
   type varchar(255)
 
   indexes {
-    type
+    type [unique, name: 'type_index']
   }
 
 }
@@ -330,8 +330,8 @@ Table MEDIA.hashtag {
   has_profile_pic bool [not null]
 
   indexes {
-    hashtag_name
-    has_profile_pic
+    hashtag_name [name: 'hashtag_name_index']
+    has_profile_pic [name: 'has_profile_pic_index']
   }
 
 }
@@ -341,7 +341,7 @@ Table MEDIA.related_hashtag {
   related_hashtag_id integer [null]
 
   indexes {
-    (hashtag_id, related_hashtag_id) [pk]
+    (hashtag_id, related_hashtag_id) [pk] //, name: 'hashtag_id_related_hashtag_id_index']
   }
 }
 
@@ -355,7 +355,7 @@ Table STATISTIC.user_cumulated_statistic {
   cumulated_media_count integer [not null]
 
   indexes {
-    (statistic_date, user_id) [pk]
+    (statistic_date, user_id) [pk] //, name: 'statistic_date_user_id_index']
   }
 
 }
@@ -370,7 +370,7 @@ Table STATISTIC.media_cumulated_statistic {
   cumulated_mention_count integer [not null, default: 0]
 
   indexes {
-    (statistic_date, media_id) [pk]
+    (statistic_date, media_id) [pk] //, name: 'statistic_date_media_id_index']
   }
 
 }
@@ -384,7 +384,7 @@ Table STATISTIC.story_cumulated_statistic {
   cumulated_mention_count integer [not null, default: 0]
 
   indexes {
-    (statistic_date, story_id) [pk]
+    (statistic_date, story_id) [pk] //, name: 'statistic_date_story_id_index']
   }
 
 }
@@ -395,18 +395,18 @@ Table STATISTIC.location_cumulated_statistic {
   cumulated_like_count integer [not null, default: 0]
 
   indexes {
-    (statistic_date, location_id) [pk]
+    (statistic_date, location_id) [pk] //, name: 'statistic_date_location_id_index']
   }
 
 }
 
 Table STATISTIC.hashtag_cumulated_statistic {
-  hashtag_id integer [primary key]
+  hashtag_id integer [not null]
   statistic_date date [not null, note: "Date the Statistics are referring to"]
   cumulated_media_count integer [not null, default: 1]
 
   indexes {
-    (statistic_date, hashtag_id) [pk]
+    (statistic_date, hashtag_id) [pk] //, name: 'statistic_date_hashtag_id_index']
   }
 
 }

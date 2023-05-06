@@ -221,89 +221,89 @@ CREATE TABLE `STATISTIC`.`location_cumulated_statistic` (
 );
 
 CREATE TABLE `STATISTIC`.`hashtag_cumulated_statistic` (
-  `hashtag_id` integer PRIMARY KEY,
+  `hashtag_id` integer NOT NULL,
   `statistic_date` date NOT NULL COMMENT 'Date the Statistics are referring to',
   `cumulated_media_count` integer NOT NULL DEFAULT 1,
   PRIMARY KEY (`statistic_date`, `hashtag_id`)
 );
 
-CREATE INDEX ``USER`.user_index_0` ON `USER`.`user` (`user_name`);
+CREATE INDEX `user_name_index` ON `USER`.`user` (`user_name`);
 
-CREATE INDEX ``USER`.user_index_1` ON `USER`.`user` (`account_type_id`);
+CREATE INDEX `account_type_index` ON `USER`.`user` (`account_type_id`);
 
-CREATE INDEX ``USER`.user_index_2` ON `USER`.`user` (`full_name`);
+CREATE INDEX `full_name_index` ON `USER`.`user` (`full_name`);
 
-CREATE INDEX ``USER`.user_index_3` ON `USER`.`user` (`created_at`);
+CREATE INDEX `created_at_index` ON `USER`.`user` (`created_at`);
 
-CREATE INDEX ``USER`.user_index_4` ON `USER`.`user` (`updated_at`);
+CREATE INDEX `updated_at_index` ON `USER`.`user` (`updated_at`);
 
-CREATE INDEX ``USER`.user_profile_setting_index_5` ON `USER`.`user_profile_setting` (`has_bio`, `bio`);
+CREATE INDEX `has_bio_bio_index` ON `USER`.`user_profile_setting` (`has_bio`, `bio`);
 
-CREATE INDEX ``USER`.user_profile_setting_index_6` ON `USER`.`user_profile_setting` (`is_private`);
+CREATE INDEX `is_privat_index` ON `USER`.`user_profile_setting` (`is_private`);
 
-CREATE INDEX ``USER`.user_profile_setting_index_7` ON `USER`.`user_profile_setting` (`created_at`);
+CREATE INDEX `created_at_index` ON `USER`.`user_profile_setting` (`created_at`);
 
-CREATE INDEX ``USER`.user_profile_setting_index_8` ON `USER`.`user_profile_setting` (`updated_at`);
+CREATE INDEX `updated_at_index` ON `USER`.`user_profile_setting` (`updated_at`);
 
-CREATE INDEX ``USER`.user_contact_details_index_9` ON `USER`.`user_contact_details` (`created_at`);
+CREATE INDEX `created_at_index` ON `USER`.`user_contact_details` (`created_at`);
 
-CREATE INDEX ``USER`.user_contact_details_index_10` ON `USER`.`user_contact_details` (`updated_at`);
+CREATE INDEX `updated_at_index` ON `USER`.`user_contact_details` (`updated_at`);
 
-CREATE INDEX ``USER`.user_adress_index_11` ON `USER`.`user_adress` (`location_id`);
+CREATE INDEX `location_id_index` ON `USER`.`user_adress` (`location_id`);
 
-CREATE INDEX ``USER`.user_adress_index_12` ON `USER`.`user_adress` (`country`, `city`);
+CREATE INDEX `country_city_index` ON `USER`.`user_adress` (`country`, `city`);
 
-CREATE INDEX ``USER`.user_adress_index_13` ON `USER`.`user_adress` (`created_at`);
+CREATE INDEX `created_at_index` ON `USER`.`user_adress` (`created_at`);
 
-CREATE INDEX ``USER`.user_adress_index_14` ON `USER`.`user_adress` (`updated_at`);
+CREATE INDEX `updated_at_index` ON `USER`.`user_adress` (`updated_at`);
 
-CREATE UNIQUE INDEX ``USER`.account_type_index_15` ON `USER`.`account_type` (`account_type`);
+CREATE UNIQUE INDEX `account_type_index` ON `USER`.`account_type` (`account_type`);
 
-CREATE INDEX ``LOCATION`.location_index_0` ON `LOCATION`.`location` (`name`);
+CREATE INDEX `name_index` ON `LOCATION`.`location` (`name`);
 
-CREATE INDEX ``LOCATION`.location_index_1` ON `LOCATION`.`location` (`country`, `city`);
+CREATE INDEX `country_city_index` ON `LOCATION`.`location` (`country`, `city`);
 
-CREATE INDEX ``LOCATION`.location_index_2` ON `LOCATION`.`location` (`created_at`);
+CREATE INDEX `created_at_index` ON `LOCATION`.`location` (`created_at`);
 
-CREATE INDEX ``LOCATION`.location_index_3` ON `LOCATION`.`location` (`updated_at`);
+CREATE INDEX `updated_at_index` ON `LOCATION`.`location` (`updated_at`);
 
-CREATE INDEX ``LOCATION`.location_contact_details_index_4` ON `LOCATION`.`location_contact_details` (`created_at`);
+CREATE INDEX `created_at_index` ON `LOCATION`.`location_contact_details` (`created_at`);
 
-CREATE INDEX ``LOCATION`.location_contact_details_index_5` ON `LOCATION`.`location_contact_details` (`updated_at`);
+CREATE INDEX `updated_at_index` ON `LOCATION`.`location_contact_details` (`updated_at`);
 
-CREATE INDEX ``MEDIA`.story_index_0` ON `MEDIA`.`story` (`user_id`);
+CREATE INDEX `user_id_index` ON `MEDIA`.`story` (`user_id`);
 
-CREATE INDEX ``MEDIA`.story_index_1` ON `MEDIA`.`story` (`media_id`);
+CREATE INDEX `media_id_index` ON `MEDIA`.`story` (`media_id`);
 
-CREATE INDEX ``MEDIA`.story_index_2` ON `MEDIA`.`story` (`media_type_id`);
+CREATE INDEX `media_type_id_index` ON `MEDIA`.`story` (`media_type_id`);
 
-CREATE INDEX ``MEDIA`.story_index_3` ON `MEDIA`.`story` (`video_duration_seconds`);
+CREATE INDEX `video_duration_seconds_index` ON `MEDIA`.`story` (`video_duration_seconds`);
 
-CREATE INDEX ``MEDIA`.story_index_4` ON `MEDIA`.`story` (`publication_datetime`);
+CREATE INDEX `publication_datetime_index` ON `MEDIA`.`story` (`publication_datetime`);
 
-CREATE INDEX ``MEDIA`.story_index_5` ON `MEDIA`.`story` (`created_at`);
+CREATE INDEX `created_at_index` ON `MEDIA`.`story` (`created_at`);
 
-CREATE INDEX ``MEDIA`.story_index_6` ON `MEDIA`.`story` (`updated_at`);
+CREATE INDEX `updated_at_index` ON `MEDIA`.`story` (`updated_at`);
 
-CREATE INDEX ``MEDIA`.media_index_7` ON `MEDIA`.`media` (`user_id`);
+CREATE INDEX `user_id_index` ON `MEDIA`.`media` (`user_id`);
 
-CREATE INDEX ``MEDIA`.media_index_8` ON `MEDIA`.`media` (`location_id`);
+CREATE INDEX `location_id_index` ON `MEDIA`.`media` (`location_id`);
 
-CREATE INDEX ``MEDIA`.media_index_9` ON `MEDIA`.`media` (`media_type_id`);
+CREATE INDEX `media_type_id_index` ON `MEDIA`.`media` (`media_type_id`);
 
-CREATE INDEX ``MEDIA`.media_index_10` ON `MEDIA`.`media` (`video_duration_seconds`);
+CREATE INDEX `video_duration_seconds_index` ON `MEDIA`.`media` (`video_duration_seconds`);
 
-CREATE INDEX ``MEDIA`.media_index_11` ON `MEDIA`.`media` (`publication_datetime`);
+CREATE INDEX `publication_datetime_index` ON `MEDIA`.`media` (`publication_datetime`);
 
-CREATE INDEX ``MEDIA`.media_index_12` ON `MEDIA`.`media` (`created_at`);
+CREATE INDEX `created_at_index` ON `MEDIA`.`media` (`created_at`);
 
-CREATE INDEX ``MEDIA`.media_index_13` ON `MEDIA`.`media` (`updated_at`);
+CREATE INDEX `updated_at_index` ON `MEDIA`.`media` (`updated_at`);
 
-CREATE INDEX ``MEDIA`.media_type_index_14` ON `MEDIA`.`media_type` (`type`);
+CREATE UNIQUE INDEX `type_index` ON `MEDIA`.`media_type` (`type`);
 
-CREATE INDEX ``MEDIA`.hashtag_index_15` ON `MEDIA`.`hashtag` (`hashtag_name`);
+CREATE INDEX `hashtag_name_index` ON `MEDIA`.`hashtag` (`hashtag_name`);
 
-CREATE INDEX ``MEDIA`.hashtag_index_16` ON `MEDIA`.`hashtag` (`has_profile_pic`);
+CREATE INDEX `has_profile_pic_index` ON `MEDIA`.`hashtag` (`has_profile_pic`);
 
 ALTER TABLE `USER`.`user_adress` ADD FOREIGN KEY (`user_id`) REFERENCES `USER`.`user` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
