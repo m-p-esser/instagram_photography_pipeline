@@ -1,6 +1,13 @@
 // Use DBML to define your database structure
 // Docs: https://dbml.dbdiagram.io/docs
 
+////// PROJECT ////// 
+
+Project project_name {
+  database_type: 'MySQL'
+  Note: 'MySQL Schema for Instagram Data'
+}
+
 ////// USER SCHEMA //////
 
 Table USER.user {
@@ -18,6 +25,14 @@ Table USER.user {
   // Insert/Update Timestamps
   created_at "timestamp default CURRENT_TIMESTAMP" [not null, note:'create time']
   updated_at "datetime default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP" [not null, note:'update time']
+
+  indexes {
+    user_name
+    full_name
+    created_at
+    updated_at
+  }
+
 }
 
 Table USER.user_profile_setting {
@@ -27,13 +42,21 @@ Table USER.user_profile_setting {
   profile_pic_url varchar(255) [unique, not null]
   profile_pic_url_hd varchar(255) [null]
   has_profile_pic bool [not null]
-  bio varchar(255) [null, default: null]
   has_bio bool [not null]
+  bio varchar(255) [null, default: null]
   is_private bool [not null]
   external_url varchar(255) [null, note: "External URL the Bio is linking to"]
   // Insert/Update Timestamps
   created_at "timestamp default CURRENT_TIMESTAMP" [not null, note:'create time']
   updated_at "datetime default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP" [not null, note:'update time']
+
+  indexes {
+    (has_bio, bio)
+    is_private
+    created_at
+    updated_at  
+  }
+
 }
 
 Table USER.user_contact_details {
@@ -48,12 +71,18 @@ Table USER.user_contact_details {
   // Insert/Update Timestamps
   created_at "timestamp default CURRENT_TIMESTAMP" [not null, note:'create time']
   updated_at "datetime default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP" [not null, note:'update time']
+
+  indexes {
+    created_at
+    updated_at
+  }
+
 }
 
 Table USER.user_adress {
   // PK and FK
   user_id integer [primary key]
-  location_id integer
+  location_id integer [null]
   // Actual data
   longitude decimal(9,6) [null, default: null]
   latitude decimal(8,6) [null, default: null]
@@ -64,18 +93,35 @@ Table USER.user_adress {
   // Insert/Update Timestamps
   created_at "timestamp default CURRENT_TIMESTAMP" [not null, note:'create time']
   updated_at "datetime default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP" [not null, note:'update time']
+
+  indexes {
+    location_id
+    (country, city)
+    created_at
+    updated_at
+  }
+
 }
 
 // Lookup Table
 Table USER.user_type {
   user_id integer [primary key]
   user_type varchar(255)
+
+  indexes {
+    user_type [unique]
+  }
 }
 
 // Bridge Table
 Table USER.follower {
   user_id integer [not null]
   follower_id integer [not null, note: "User which is following the account"]
+
+  indexes {
+    (user_id, follower_id) [pk]
+  }
+
 }
 
 ////// LOCATION SCHEMA //////
@@ -95,6 +141,14 @@ Table LOCATION.location {
   // Insert/Update Timestamps
   created_at "timestamp default CURRENT_TIMESTAMP" [not null, note:'create time']
   updated_at "datetime default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP" [not null, note:'update time']
+
+  indexes {
+    name
+    (country, city)
+    created_at
+    updated_at    
+  }
+
 }
 
 Table LOCATION.location_contact_details {
@@ -107,6 +161,11 @@ Table LOCATION.location_contact_details {
   // Insert/Update Timestamps
   created_at "timestamp default CURRENT_TIMESTAMP" [not null, note:'create time']
   updated_at "datetime default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP" [not null, note:'update time']
+
+  indexes {
+    created_at
+    updated_at  
+  }
 }
 
 
@@ -117,8 +176,8 @@ Table LOCATION.location_contact_details {
 Table MEDIA.story {
   // PK and FK
   story_id integer [primary key]
-  user_id integer
-  media_id integer
+  user_id integer [not null]
+  media_id integer [not null]
   // Actual Data
   thumbnail_url varchar(255) [null, default: null]
   video_url varchar(255) [null, default: null]
@@ -128,6 +187,15 @@ Table MEDIA.story {
   // Insert/Update Timestamps
   created_at "timestamp default CURRENT_TIMESTAMP" [not null, note:'create time']
   updated_at "datetime default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP" [not null, note:'update time']
+
+  indexes {
+    user_id
+    media_id
+    video_duration_seconds
+    publication_datetime
+    created_at
+    updated_at
+  }
 }
 
 // Bridge Table
@@ -135,24 +203,40 @@ Table MEDIA.story_mention {
   story_id integer [not null]
   user_id integer [not null]
   is_sponsor bool [not null, default: False]
+
+  indexes {
+    (story_id, user_id) [pk]
+  }
 }
 
 // Bridge Table
 Table MEDIA.story_location {
   story_id integer [not null]
   location_id integer [not null]
+
+  indexes {
+    (story_id, location_id) [pk]
+  }
 }
 
 // Bridge Table
 TABLE MEDIA.story_hashtag {
   story_id integer [not null]
   hashtag_id integer [not null]
+
+  indexes {
+    (story_id, hashtag_id) [pk]
+  }
 }
 
 // Bridge Table
 Table MEDIA.story_media {
   story_id integer [not null]
   media_id integer [not null]
+
+  indexes {
+    (story_id, media_id) [pk]
+  }
 }
 
 // MEDIA //
@@ -174,24 +258,49 @@ Table MEDIA.media {
   // Insert/Update Timestamps
   created_at "timestamp default CURRENT_TIMESTAMP" [not null, note:'create time']
   updated_at "datetime default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP" [not null, note:'update time']
+
+  indexes {
+    user_id
+    location_id
+    video_duration_seconds
+    publication_datetime
+    created_at
+    updated_at
+  }
+
 }
 
 // Bridge Table
 Table MEDIA.media_usertag {
   media_id integer [not null]
   user_id integer [not null]
+
+  indexes {
+    (media_id, user_id) [pk]
+  }
+
 }
 
 // Bridge Table
 Table MEDIA.media_hashtag {
   media_id integer [not null]
   hashtag_id integer [not null]
+
+  indexes {
+    (media_id, hashtag_id) [pk]
+  }
+
 }
 
 // Bridge Table
 Table MEDIA.media_sponsor {
   media_id integer [not null]
   user_id integer [not null]
+
+  indexes {
+    (media_id, user_id) [pk]
+  }
+
 }
 
 // MEDIA + STORY //
@@ -199,7 +308,12 @@ Table MEDIA.media_sponsor {
 // Lookup Table
 Table MEDIA.media_type {
   media_id integer [primary key]
-  media_name varchar(255)
+  type varchar(255)
+
+  indexes {
+    type
+  }
+
 }
 
 // HASHTAG //
@@ -208,12 +322,22 @@ Table MEDIA.hashtag {
   hashtag_id integer [primary key]
   hashtag_name varchar(255) [not null, unique]
   profile_pic_url varchar(255) [null]
+  has_profile_pic bool [not null]
+
+  indexes {
+    hashtag_name
+    has_profile_pic
+  }
+
 }
 
 Table MEDIA.related_hashtag {
-  id integer [primary key]
-  hashtag_id integer 
-  related_hashtag_id integer
+  hashtag_id integer [not null]
+  related_hashtag_id integer [null]
+
+  indexes {
+    (hashtag_id, related_hashtag_id) [pk]
+  }
 }
 
 ////// STATISTIC SCHEMA //////
@@ -224,6 +348,11 @@ Table STATISTIC.user_cumulated_statistic {
   cumulated_follower_count integer [not null, note: "Number of accounts that are following this account"]
   cumulated_following_count integer [not null, note: "Number of accounts the account is following"]
   cumulated_media_count integer [not null]
+
+  indexes {
+    (statistic_date, user_id) [pk]
+  }
+
 }
 
 Table STATISTIC.media_cumulated_statistic {
@@ -234,6 +363,11 @@ Table STATISTIC.media_cumulated_statistic {
   cumulated_play_count integer [not null, default: 0]
   cumulated_view_count integer [not null, default: 0]
   cumulated_mention_count integer [not null, default: 0]
+
+  indexes {
+    (statistic_date, media_id) [pk]
+  }
+
 }
 
 Table STATISTIC.story_cumulated_statistic {
@@ -243,18 +377,33 @@ Table STATISTIC.story_cumulated_statistic {
   cumulated_comment_count integer [not null, default: 0]
   cumulated_play_count integer [not null, default: 0]
   cumulated_mention_count integer [not null, default: 0]
+
+  indexes {
+    (statistic_date, story_id) [pk]
+  }
+
 }
 
 Table STATISTIC.location_cumulated_statistic {
   location_id integer [not null]
   statistic_date date [not null, note: "Date the Statistics are referring to"]
   cumulated_like_count integer [not null, default: 0]
+
+  indexes {
+    (statistic_date, location_id) [pk]
+  }
+
 }
 
 Table STATISTIC.hashtag_cumulated_statistic {
   hashtag_id integer [primary key]
   statistic_date date [not null, note: "Date the Statistics are referring to"]
   cumulated_media_count integer [not null, default: 1]
+
+  indexes {
+    (statistic_date, hashtag_id) [pk]
+  }
+
 }
 
 ////// RELATIONSHIPS //////
