@@ -13,11 +13,11 @@ Project project_name {
 Table USER.user {
   // PK and FK
   user_id integer [primary key] 
+  account_type_id int [null, default: null]
   // Actual data
   user_name varchar(255) [unique, not null]
   full_name varchar(255) [null, default: null]
   is_verified bool [not null]
-  account_type int [null, default: null]
   is_business bool [not null]
   business_category_name varchar(255) [null, default: null]
   category_name varchar(255) [null, default: null]
@@ -28,6 +28,7 @@ Table USER.user {
 
   indexes {
     user_name
+    account_type_id
     full_name
     created_at
     updated_at
@@ -104,12 +105,12 @@ Table USER.user_adress {
 }
 
 // Lookup Table
-Table USER.user_type {
-  user_id integer [primary key]
-  user_type varchar(255)
+Table USER.account_type {
+  account_type_id integer [primary key]
+  account_type varchar(255) [not null]
 
   indexes {
-    user_type [unique]
+    account_type [unique]
   }
 }
 
@@ -178,6 +179,7 @@ Table MEDIA.story {
   story_id integer [primary key]
   user_id integer [not null]
   media_id integer [not null]
+  media_type_id integer [null]
   // Actual Data
   thumbnail_url varchar(255) [null, default: null]
   video_url varchar(255) [null, default: null]
@@ -191,6 +193,7 @@ Table MEDIA.story {
   indexes {
     user_id
     media_id
+    media_type_id
     video_duration_seconds
     publication_datetime
     created_at
@@ -244,8 +247,9 @@ Table MEDIA.story_media {
 Table MEDIA.media {
   // PK and FK
   media_id integer [primary key]
-  user_id integer
-  location_id integer
+  user_id integer [not null]
+  location_id integer [null]
+  media_type_id integer [null]
   // Actual Data
   title varchar(255) [null, default: null]
   caption varchar(255) [null, default: null]
@@ -262,6 +266,7 @@ Table MEDIA.media {
   indexes {
     user_id
     location_id
+    media_type_id
     video_duration_seconds
     publication_datetime
     created_at
@@ -307,7 +312,7 @@ Table MEDIA.media_sponsor {
 
 // Lookup Table
 Table MEDIA.media_type {
-  media_id integer [primary key]
+  media_type_id integer [primary key]
   type varchar(255)
 
   indexes {
@@ -409,44 +414,44 @@ Table STATISTIC.hashtag_cumulated_statistic {
 ////// RELATIONSHIPS //////
 
 //// User ////
-Ref: USER.user.user_id - USER.user_adress.user_id
-Ref: USER.user.user_id - USER.user_profile_setting.user_id
-Ref: USER.user.user_id - USER.user_contact_details.user_id
-Ref: USER.user.user_id - USER.user_type.user_id
-Ref: USER.user.user_id < USER.follower.user_id
-Ref: USER.user_adress.location_id - LOCATION.location.location_id
-Ref: USER.user.user_id < STATISTIC.user_cumulated_statistic.user_id
+Ref: USER.user.user_id - USER.user_adress.user_id [delete: cascade, update: cascade]
+Ref: USER.user.user_id - USER.user_profile_setting.user_id [delete: cascade, update: cascade]
+Ref: USER.user.user_id - USER.user_contact_details.user_id [delete: cascade, update: cascade]
+Ref: USER.user.account_type_id > USER.account_type.account_type_id [delete: set null, update: cascade]
+Ref: USER.user.user_id < USER.follower.user_id [delete: cascade, update: cascade]
+Ref: USER.user_adress.location_id > LOCATION.location.location_id // Note sure as both tables will probably be loaded independetly. If dependant on each other -> [delete: set null, update: cascade]
+Ref: USER.user.user_id < STATISTIC.user_cumulated_statistic.user_id [delete: cascade, update: cascade]
 
 //// Media ////
-Ref: MEDIA.media.media_id - MEDIA.media_type.media_id
+Ref: MEDIA.media.media_type_id > MEDIA.media_type.media_type_id  [delete: set null, update: cascade]
 // First level
-Ref: MEDIA.media.media_id < MEDIA.media_sponsor.media_id
-Ref: MEDIA.media.media_id < MEDIA.media_hashtag.media_id
-Ref: MEDIA.media.media_id < MEDIA.media_usertag.media_id
+Ref: MEDIA.media.media_id < MEDIA.media_sponsor.media_id [delete: cascade, update: cascade]
+Ref: MEDIA.media.media_id < MEDIA.media_hashtag.media_id [delete: cascade, update: cascade]
+Ref: MEDIA.media.media_id < MEDIA.media_usertag.media_id [delete: cascade, update: cascade]
 // Second levl
-Ref: MEDIA.media_hashtag.hashtag_id - MEDIA.hashtag.hashtag_id
-Ref: MEDIA.media_sponsor.user_id - USER.user.user_id
-Ref: MEDIA.media_usertag.user_id - USER.user.user_id
+Ref: MEDIA.media_hashtag.hashtag_id > MEDIA.hashtag.hashtag_id [delete: cascade, update: cascade]
+Ref: MEDIA.media_sponsor.user_id > USER.user.user_id [delete: cascade, update: cascade]
+Ref: MEDIA.media_usertag.user_id > USER.user.user_id [delete: cascade, update: cascade]
 // Statistic
-Ref: MEDIA.media.media_id < STATISTIC.media_cumulated_statistic.media_id
+Ref: MEDIA.media.media_id < STATISTIC.media_cumulated_statistic.media_id [delete: cascade, update: cascade]
 
 //// Story ////
-Ref: MEDIA.story.media_id - MEDIA.media_type.media_id
+Ref: MEDIA.story.media_type_id > MEDIA.media_type.media_type_id [delete: set null, update: cascade]
 // First level
-Ref: MEDIA.story.story_id < MEDIA.story_mention.story_id
-Ref: MEDIA.story.story_id < MEDIA.story_location.story_id
-Ref: MEDIA.story.story_id < MEDIA.story_hashtag.story_id
+Ref: MEDIA.story.story_id < MEDIA.story_mention.story_id [delete: cascade, update: cascade]
+Ref: MEDIA.story.story_id < MEDIA.story_location.story_id [delete: cascade, update: cascade]
+Ref: MEDIA.story.story_id < MEDIA.story_hashtag.story_id [delete: cascade, update: cascade]
 // Second level
-Ref: MEDIA.story_mention.user_id - USER.user.user_id
-Ref: MEDIA.story_location.location_id - LOCATION.location.location_id
-Ref: MEDIA.story_hashtag.hashtag_id - MEDIA.hashtag.hashtag_id
+Ref: MEDIA.story_mention.user_id > USER.user.user_id [delete: cascade, update: cascade]
+Ref: MEDIA.story_location.location_id > LOCATION.location.location_id [delete: cascade, update: cascade]
+Ref: MEDIA.story_hashtag.hashtag_id > MEDIA.hashtag.hashtag_id [delete: cascade, update: cascade]
 // Statistic
-Ref: MEDIA.story.story_id < STATISTIC.story_cumulated_statistic.story_id
+Ref: MEDIA.story.story_id < STATISTIC.story_cumulated_statistic.story_id [delete: cascade, update: cascade]
 
 //// Hashtag ////
-Ref: MEDIA.hashtag.hashtag_id - MEDIA.related_hashtag.hashtag_id
-Ref: MEDIA.hashtag.hashtag_id < STATISTIC.hashtag_cumulated_statistic.hashtag_id
+Ref: MEDIA.hashtag.hashtag_id < MEDIA.related_hashtag.hashtag_id [delete: cascade, update: cascade]
+Ref: MEDIA.hashtag.hashtag_id < STATISTIC.hashtag_cumulated_statistic.hashtag_id [delete: cascade, update: cascade]
 
 //// Location ////
-Ref: LOCATION.location.location_id - LOCATION.location_contact_details.location_id
-Ref: LOCATION.location.location_id < STATISTIC.location_cumulated_statistic.location_id
+Ref: LOCATION.location.location_id < LOCATION.location_contact_details.location_id [delete: cascade, update: cascade]
+Ref: LOCATION.location.location_id < STATISTIC.location_cumulated_statistic.location_id [delete: cascade, update: cascade]

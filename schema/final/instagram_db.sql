@@ -8,10 +8,10 @@ CREATE SCHEMA `STATISTIC`;
 
 CREATE TABLE `USER`.`user` (
   `user_id` integer PRIMARY KEY,
+  `account_type_id` int DEFAULT null,
   `user_name` varchar(255) UNIQUE NOT NULL,
   `full_name` varchar(255) DEFAULT null,
   `is_verified` bool NOT NULL,
-  `account_type` int DEFAULT null,
   `is_business` bool NOT NULL,
   `business_category_name` varchar(255) DEFAULT null,
   `category_name` varchar(255) DEFAULT null,
@@ -57,9 +57,9 @@ CREATE TABLE `USER`.`user_adress` (
   `updated_at` datetime default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL COMMENT 'update time'
 );
 
-CREATE TABLE `USER`.`user_type` (
-  `user_id` integer PRIMARY KEY,
-  `user_type` varchar(255)
+CREATE TABLE `USER`.`account_type` (
+  `account_type_id` integer PRIMARY KEY,
+  `account_type` varchar(255) NOT NULL
 );
 
 CREATE TABLE `USER`.`follower` (
@@ -95,6 +95,7 @@ CREATE TABLE `MEDIA`.`story` (
   `story_id` integer PRIMARY KEY,
   `user_id` integer NOT NULL,
   `media_id` integer NOT NULL,
+  `media_type_id` integer,
   `thumbnail_url` varchar(255) DEFAULT null,
   `video_url` varchar(255) DEFAULT null,
   `video_duration_seconds` decimal(9,6) DEFAULT null,
@@ -131,8 +132,9 @@ CREATE TABLE `MEDIA`.`story_media` (
 
 CREATE TABLE `MEDIA`.`media` (
   `media_id` integer PRIMARY KEY,
-  `user_id` integer,
+  `user_id` integer NOT NULL,
   `location_id` integer,
+  `media_type_id` integer,
   `title` varchar(255) DEFAULT null,
   `caption` varchar(255) DEFAULT null,
   `thumbnail_url` varchar(255) DEFAULT null,
@@ -164,7 +166,7 @@ CREATE TABLE `MEDIA`.`media_sponsor` (
 );
 
 CREATE TABLE `MEDIA`.`media_type` (
-  `media_id` integer PRIMARY KEY,
+  `media_type_id` integer PRIMARY KEY,
   `type` varchar(255)
 );
 
@@ -227,33 +229,35 @@ CREATE TABLE `STATISTIC`.`hashtag_cumulated_statistic` (
 
 CREATE INDEX ``USER`.user_index_0` ON `USER`.`user` (`user_name`);
 
-CREATE INDEX ``USER`.user_index_1` ON `USER`.`user` (`full_name`);
+CREATE INDEX ``USER`.user_index_1` ON `USER`.`user` (`account_type_id`);
 
-CREATE INDEX ``USER`.user_index_2` ON `USER`.`user` (`created_at`);
+CREATE INDEX ``USER`.user_index_2` ON `USER`.`user` (`full_name`);
 
-CREATE INDEX ``USER`.user_index_3` ON `USER`.`user` (`updated_at`);
+CREATE INDEX ``USER`.user_index_3` ON `USER`.`user` (`created_at`);
 
-CREATE INDEX ``USER`.user_profile_setting_index_4` ON `USER`.`user_profile_setting` (`has_bio`, `bio`);
+CREATE INDEX ``USER`.user_index_4` ON `USER`.`user` (`updated_at`);
 
-CREATE INDEX ``USER`.user_profile_setting_index_5` ON `USER`.`user_profile_setting` (`is_private`);
+CREATE INDEX ``USER`.user_profile_setting_index_5` ON `USER`.`user_profile_setting` (`has_bio`, `bio`);
 
-CREATE INDEX ``USER`.user_profile_setting_index_6` ON `USER`.`user_profile_setting` (`created_at`);
+CREATE INDEX ``USER`.user_profile_setting_index_6` ON `USER`.`user_profile_setting` (`is_private`);
 
-CREATE INDEX ``USER`.user_profile_setting_index_7` ON `USER`.`user_profile_setting` (`updated_at`);
+CREATE INDEX ``USER`.user_profile_setting_index_7` ON `USER`.`user_profile_setting` (`created_at`);
 
-CREATE INDEX ``USER`.user_contact_details_index_8` ON `USER`.`user_contact_details` (`created_at`);
+CREATE INDEX ``USER`.user_profile_setting_index_8` ON `USER`.`user_profile_setting` (`updated_at`);
 
-CREATE INDEX ``USER`.user_contact_details_index_9` ON `USER`.`user_contact_details` (`updated_at`);
+CREATE INDEX ``USER`.user_contact_details_index_9` ON `USER`.`user_contact_details` (`created_at`);
 
-CREATE INDEX ``USER`.user_adress_index_10` ON `USER`.`user_adress` (`location_id`);
+CREATE INDEX ``USER`.user_contact_details_index_10` ON `USER`.`user_contact_details` (`updated_at`);
 
-CREATE INDEX ``USER`.user_adress_index_11` ON `USER`.`user_adress` (`country`, `city`);
+CREATE INDEX ``USER`.user_adress_index_11` ON `USER`.`user_adress` (`location_id`);
 
-CREATE INDEX ``USER`.user_adress_index_12` ON `USER`.`user_adress` (`created_at`);
+CREATE INDEX ``USER`.user_adress_index_12` ON `USER`.`user_adress` (`country`, `city`);
 
-CREATE INDEX ``USER`.user_adress_index_13` ON `USER`.`user_adress` (`updated_at`);
+CREATE INDEX ``USER`.user_adress_index_13` ON `USER`.`user_adress` (`created_at`);
 
-CREATE UNIQUE INDEX ``USER`.user_type_index_14` ON `USER`.`user_type` (`user_type`);
+CREATE INDEX ``USER`.user_adress_index_14` ON `USER`.`user_adress` (`updated_at`);
+
+CREATE UNIQUE INDEX ``USER`.account_type_index_15` ON `USER`.`account_type` (`account_type`);
 
 CREATE INDEX ``LOCATION`.location_index_0` ON `LOCATION`.`location` (`name`);
 
@@ -271,82 +275,86 @@ CREATE INDEX ``MEDIA`.story_index_0` ON `MEDIA`.`story` (`user_id`);
 
 CREATE INDEX ``MEDIA`.story_index_1` ON `MEDIA`.`story` (`media_id`);
 
-CREATE INDEX ``MEDIA`.story_index_2` ON `MEDIA`.`story` (`video_duration_seconds`);
+CREATE INDEX ``MEDIA`.story_index_2` ON `MEDIA`.`story` (`media_type_id`);
 
-CREATE INDEX ``MEDIA`.story_index_3` ON `MEDIA`.`story` (`publication_datetime`);
+CREATE INDEX ``MEDIA`.story_index_3` ON `MEDIA`.`story` (`video_duration_seconds`);
 
-CREATE INDEX ``MEDIA`.story_index_4` ON `MEDIA`.`story` (`created_at`);
+CREATE INDEX ``MEDIA`.story_index_4` ON `MEDIA`.`story` (`publication_datetime`);
 
-CREATE INDEX ``MEDIA`.story_index_5` ON `MEDIA`.`story` (`updated_at`);
+CREATE INDEX ``MEDIA`.story_index_5` ON `MEDIA`.`story` (`created_at`);
 
-CREATE INDEX ``MEDIA`.media_index_6` ON `MEDIA`.`media` (`user_id`);
+CREATE INDEX ``MEDIA`.story_index_6` ON `MEDIA`.`story` (`updated_at`);
 
-CREATE INDEX ``MEDIA`.media_index_7` ON `MEDIA`.`media` (`location_id`);
+CREATE INDEX ``MEDIA`.media_index_7` ON `MEDIA`.`media` (`user_id`);
 
-CREATE INDEX ``MEDIA`.media_index_8` ON `MEDIA`.`media` (`video_duration_seconds`);
+CREATE INDEX ``MEDIA`.media_index_8` ON `MEDIA`.`media` (`location_id`);
 
-CREATE INDEX ``MEDIA`.media_index_9` ON `MEDIA`.`media` (`publication_datetime`);
+CREATE INDEX ``MEDIA`.media_index_9` ON `MEDIA`.`media` (`media_type_id`);
 
-CREATE INDEX ``MEDIA`.media_index_10` ON `MEDIA`.`media` (`created_at`);
+CREATE INDEX ``MEDIA`.media_index_10` ON `MEDIA`.`media` (`video_duration_seconds`);
 
-CREATE INDEX ``MEDIA`.media_index_11` ON `MEDIA`.`media` (`updated_at`);
+CREATE INDEX ``MEDIA`.media_index_11` ON `MEDIA`.`media` (`publication_datetime`);
 
-CREATE INDEX ``MEDIA`.media_type_index_12` ON `MEDIA`.`media_type` (`type`);
+CREATE INDEX ``MEDIA`.media_index_12` ON `MEDIA`.`media` (`created_at`);
 
-CREATE INDEX ``MEDIA`.hashtag_index_13` ON `MEDIA`.`hashtag` (`hashtag_name`);
+CREATE INDEX ``MEDIA`.media_index_13` ON `MEDIA`.`media` (`updated_at`);
 
-CREATE INDEX ``MEDIA`.hashtag_index_14` ON `MEDIA`.`hashtag` (`has_profile_pic`);
+CREATE INDEX ``MEDIA`.media_type_index_14` ON `MEDIA`.`media_type` (`type`);
 
-ALTER TABLE `USER`.`user_adress` ADD FOREIGN KEY (`user_id`) REFERENCES `USER`.`user` (`user_id`);
+CREATE INDEX ``MEDIA`.hashtag_index_15` ON `MEDIA`.`hashtag` (`hashtag_name`);
 
-ALTER TABLE `USER`.`user_profile_setting` ADD FOREIGN KEY (`user_id`) REFERENCES `USER`.`user` (`user_id`);
+CREATE INDEX ``MEDIA`.hashtag_index_16` ON `MEDIA`.`hashtag` (`has_profile_pic`);
 
-ALTER TABLE `USER`.`user_contact_details` ADD FOREIGN KEY (`user_id`) REFERENCES `USER`.`user` (`user_id`);
+ALTER TABLE `USER`.`user_adress` ADD FOREIGN KEY (`user_id`) REFERENCES `USER`.`user` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
-ALTER TABLE `USER`.`user_type` ADD FOREIGN KEY (`user_id`) REFERENCES `USER`.`user` (`user_id`);
+ALTER TABLE `USER`.`user_profile_setting` ADD FOREIGN KEY (`user_id`) REFERENCES `USER`.`user` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
-ALTER TABLE `USER`.`follower` ADD FOREIGN KEY (`user_id`) REFERENCES `USER`.`user` (`user_id`);
+ALTER TABLE `USER`.`user_contact_details` ADD FOREIGN KEY (`user_id`) REFERENCES `USER`.`user` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
-ALTER TABLE `LOCATION`.`location` ADD FOREIGN KEY (`location_id`) REFERENCES `USER`.`user_adress` (`location_id`);
+ALTER TABLE `USER`.`user` ADD FOREIGN KEY (`account_type_id`) REFERENCES `USER`.`account_type` (`account_type_id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE `STATISTIC`.`user_cumulated_statistic` ADD FOREIGN KEY (`user_id`) REFERENCES `USER`.`user` (`user_id`);
+ALTER TABLE `USER`.`follower` ADD FOREIGN KEY (`user_id`) REFERENCES `USER`.`user` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
-ALTER TABLE `LOCATION`.`location_contact_details` ADD FOREIGN KEY (`location_id`) REFERENCES `LOCATION`.`location` (`location_id`);
+ALTER TABLE `USER`.`user_adress` ADD FOREIGN KEY (`location_id`) REFERENCES `LOCATION`.`location` (`location_id`);
 
-ALTER TABLE `STATISTIC`.`location_cumulated_statistic` ADD FOREIGN KEY (`location_id`) REFERENCES `LOCATION`.`location` (`location_id`);
+ALTER TABLE `STATISTIC`.`user_cumulated_statistic` ADD FOREIGN KEY (`user_id`) REFERENCES `USER`.`user` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
-ALTER TABLE `MEDIA`.`media_type` ADD FOREIGN KEY (`media_id`) REFERENCES `MEDIA`.`media` (`media_id`);
+ALTER TABLE `LOCATION`.`location_contact_details` ADD FOREIGN KEY (`location_id`) REFERENCES `LOCATION`.`location` (`location_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
-ALTER TABLE `MEDIA`.`media_sponsor` ADD FOREIGN KEY (`media_id`) REFERENCES `MEDIA`.`media` (`media_id`);
+ALTER TABLE `STATISTIC`.`location_cumulated_statistic` ADD FOREIGN KEY (`location_id`) REFERENCES `LOCATION`.`location` (`location_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
-ALTER TABLE `MEDIA`.`media_hashtag` ADD FOREIGN KEY (`media_id`) REFERENCES `MEDIA`.`media` (`media_id`);
+ALTER TABLE `MEDIA`.`media` ADD FOREIGN KEY (`media_type_id`) REFERENCES `MEDIA`.`media_type` (`media_type_id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE `MEDIA`.`media_usertag` ADD FOREIGN KEY (`media_id`) REFERENCES `MEDIA`.`media` (`media_id`);
+ALTER TABLE `MEDIA`.`media_sponsor` ADD FOREIGN KEY (`media_id`) REFERENCES `MEDIA`.`media` (`media_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
-ALTER TABLE `MEDIA`.`hashtag` ADD FOREIGN KEY (`hashtag_id`) REFERENCES `MEDIA`.`media_hashtag` (`hashtag_id`);
+ALTER TABLE `MEDIA`.`media_hashtag` ADD FOREIGN KEY (`media_id`) REFERENCES `MEDIA`.`media` (`media_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
-ALTER TABLE `USER`.`user` ADD FOREIGN KEY (`user_id`) REFERENCES `MEDIA`.`media_sponsor` (`user_id`);
+ALTER TABLE `MEDIA`.`media_usertag` ADD FOREIGN KEY (`media_id`) REFERENCES `MEDIA`.`media` (`media_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
-ALTER TABLE `USER`.`user` ADD FOREIGN KEY (`user_id`) REFERENCES `MEDIA`.`media_usertag` (`user_id`);
+ALTER TABLE `MEDIA`.`media_hashtag` ADD FOREIGN KEY (`hashtag_id`) REFERENCES `MEDIA`.`hashtag` (`hashtag_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
-ALTER TABLE `STATISTIC`.`media_cumulated_statistic` ADD FOREIGN KEY (`media_id`) REFERENCES `MEDIA`.`media` (`media_id`);
+ALTER TABLE `MEDIA`.`media_sponsor` ADD FOREIGN KEY (`user_id`) REFERENCES `USER`.`user` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
-ALTER TABLE `MEDIA`.`media_type` ADD FOREIGN KEY (`media_id`) REFERENCES `MEDIA`.`story` (`media_id`);
+ALTER TABLE `MEDIA`.`media_usertag` ADD FOREIGN KEY (`user_id`) REFERENCES `USER`.`user` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
-ALTER TABLE `MEDIA`.`story_mention` ADD FOREIGN KEY (`story_id`) REFERENCES `MEDIA`.`story` (`story_id`);
+ALTER TABLE `STATISTIC`.`media_cumulated_statistic` ADD FOREIGN KEY (`media_id`) REFERENCES `MEDIA`.`media` (`media_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
-ALTER TABLE `MEDIA`.`story_location` ADD FOREIGN KEY (`story_id`) REFERENCES `MEDIA`.`story` (`story_id`);
+ALTER TABLE `MEDIA`.`story` ADD FOREIGN KEY (`media_type_id`) REFERENCES `MEDIA`.`media_type` (`media_type_id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE `MEDIA`.`story_hashtag` ADD FOREIGN KEY (`story_id`) REFERENCES `MEDIA`.`story` (`story_id`);
+ALTER TABLE `MEDIA`.`story_mention` ADD FOREIGN KEY (`story_id`) REFERENCES `MEDIA`.`story` (`story_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
-ALTER TABLE `USER`.`user` ADD FOREIGN KEY (`user_id`) REFERENCES `MEDIA`.`story_mention` (`user_id`);
+ALTER TABLE `MEDIA`.`story_location` ADD FOREIGN KEY (`story_id`) REFERENCES `MEDIA`.`story` (`story_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
-ALTER TABLE `LOCATION`.`location` ADD FOREIGN KEY (`location_id`) REFERENCES `MEDIA`.`story_location` (`location_id`);
+ALTER TABLE `MEDIA`.`story_hashtag` ADD FOREIGN KEY (`story_id`) REFERENCES `MEDIA`.`story` (`story_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
-ALTER TABLE `MEDIA`.`hashtag` ADD FOREIGN KEY (`hashtag_id`) REFERENCES `MEDIA`.`story_hashtag` (`hashtag_id`);
+ALTER TABLE `MEDIA`.`story_mention` ADD FOREIGN KEY (`user_id`) REFERENCES `USER`.`user` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
-ALTER TABLE `STATISTIC`.`story_cumulated_statistic` ADD FOREIGN KEY (`story_id`) REFERENCES `MEDIA`.`story` (`story_id`);
+ALTER TABLE `MEDIA`.`story_location` ADD FOREIGN KEY (`location_id`) REFERENCES `LOCATION`.`location` (`location_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
-ALTER TABLE `MEDIA`.`related_hashtag` ADD FOREIGN KEY (`hashtag_id`) REFERENCES `MEDIA`.`hashtag` (`hashtag_id`);
+ALTER TABLE `MEDIA`.`story_hashtag` ADD FOREIGN KEY (`hashtag_id`) REFERENCES `MEDIA`.`hashtag` (`hashtag_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
-ALTER TABLE `STATISTIC`.`hashtag_cumulated_statistic` ADD FOREIGN KEY (`hashtag_id`) REFERENCES `MEDIA`.`hashtag` (`hashtag_id`);
+ALTER TABLE `STATISTIC`.`story_cumulated_statistic` ADD FOREIGN KEY (`story_id`) REFERENCES `MEDIA`.`story` (`story_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE `MEDIA`.`related_hashtag` ADD FOREIGN KEY (`hashtag_id`) REFERENCES `MEDIA`.`hashtag` (`hashtag_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE `STATISTIC`.`hashtag_cumulated_statistic` ADD FOREIGN KEY (`hashtag_id`) REFERENCES `MEDIA`.`hashtag` (`hashtag_id`) ON DELETE CASCADE ON UPDATE CASCADE;
