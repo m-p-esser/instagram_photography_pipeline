@@ -25,8 +25,8 @@ CREATE TABLE `USER`.`user_profile_setting` (
   `profile_pic_url` varchar(255) UNIQUE NOT NULL,
   `profile_pic_url_hd` varchar(255),
   `has_profile_pic` bool NOT NULL,
-  `bio` varchar(255) DEFAULT null,
   `has_bio` bool NOT NULL,
+  `bio` varchar(255) DEFAULT null,
   `is_private` bool NOT NULL,
   `external_url` varchar(255) COMMENT 'External URL the Bio is linking to',
   `created_at` timestamp default CURRENT_TIMESTAMP NOT NULL COMMENT 'create time',
@@ -64,7 +64,8 @@ CREATE TABLE `USER`.`user_type` (
 
 CREATE TABLE `USER`.`follower` (
   `user_id` integer NOT NULL,
-  `follower_id` integer NOT NULL COMMENT 'User which is following the account'
+  `follower_id` integer NOT NULL COMMENT 'User which is following the account',
+  PRIMARY KEY (`user_id`, `follower_id`)
 );
 
 CREATE TABLE `LOCATION`.`location` (
@@ -92,8 +93,8 @@ CREATE TABLE `LOCATION`.`location_contact_details` (
 
 CREATE TABLE `MEDIA`.`story` (
   `story_id` integer PRIMARY KEY,
-  `user_id` integer,
-  `media_id` integer,
+  `user_id` integer NOT NULL,
+  `media_id` integer NOT NULL,
   `thumbnail_url` varchar(255) DEFAULT null,
   `video_url` varchar(255) DEFAULT null,
   `video_duration_seconds` decimal(9,6) DEFAULT null,
@@ -106,22 +107,26 @@ CREATE TABLE `MEDIA`.`story` (
 CREATE TABLE `MEDIA`.`story_mention` (
   `story_id` integer NOT NULL,
   `user_id` integer NOT NULL,
-  `is_sponsor` bool NOT NULL DEFAULT False
+  `is_sponsor` bool NOT NULL DEFAULT False,
+  PRIMARY KEY (`story_id`, `user_id`)
 );
 
 CREATE TABLE `MEDIA`.`story_location` (
   `story_id` integer NOT NULL,
-  `location_id` integer NOT NULL
+  `location_id` integer NOT NULL,
+  PRIMARY KEY (`story_id`, `location_id`)
 );
 
 CREATE TABLE `MEDIA`.`story_hashtag` (
   `story_id` integer NOT NULL,
-  `hashtag_id` integer NOT NULL
+  `hashtag_id` integer NOT NULL,
+  PRIMARY KEY (`story_id`, `hashtag_id`)
 );
 
 CREATE TABLE `MEDIA`.`story_media` (
   `story_id` integer NOT NULL,
-  `media_id` integer NOT NULL
+  `media_id` integer NOT NULL,
+  PRIMARY KEY (`story_id`, `media_id`)
 );
 
 CREATE TABLE `MEDIA`.`media` (
@@ -142,34 +147,38 @@ CREATE TABLE `MEDIA`.`media` (
 
 CREATE TABLE `MEDIA`.`media_usertag` (
   `media_id` integer NOT NULL,
-  `user_id` integer NOT NULL
+  `user_id` integer NOT NULL,
+  PRIMARY KEY (`media_id`, `user_id`)
 );
 
 CREATE TABLE `MEDIA`.`media_hashtag` (
   `media_id` integer NOT NULL,
-  `hashtag_id` integer NOT NULL
+  `hashtag_id` integer NOT NULL,
+  PRIMARY KEY (`media_id`, `hashtag_id`)
 );
 
 CREATE TABLE `MEDIA`.`media_sponsor` (
   `media_id` integer NOT NULL,
-  `user_id` integer NOT NULL
+  `user_id` integer NOT NULL,
+  PRIMARY KEY (`media_id`, `user_id`)
 );
 
 CREATE TABLE `MEDIA`.`media_type` (
   `media_id` integer PRIMARY KEY,
-  `media_name` varchar(255)
+  `type` varchar(255)
 );
 
 CREATE TABLE `MEDIA`.`hashtag` (
   `hashtag_id` integer PRIMARY KEY,
   `hashtag_name` varchar(255) UNIQUE NOT NULL,
-  `profile_pic_url` varchar(255)
+  `profile_pic_url` varchar(255),
+  `has_profile_pic` bool NOT NULL
 );
 
 CREATE TABLE `MEDIA`.`related_hashtag` (
-  `id` integer PRIMARY KEY,
-  `hashtag_id` integer,
-  `related_hashtag_id` integer
+  `hashtag_id` integer NOT NULL,
+  `related_hashtag_id` integer,
+  PRIMARY KEY (`hashtag_id`, `related_hashtag_id`)
 );
 
 CREATE TABLE `STATISTIC`.`user_cumulated_statistic` (
@@ -177,7 +186,8 @@ CREATE TABLE `STATISTIC`.`user_cumulated_statistic` (
   `statistic_date` date NOT NULL COMMENT 'Date the Statistics are referring to',
   `cumulated_follower_count` integer NOT NULL COMMENT 'Number of accounts that are following this account',
   `cumulated_following_count` integer NOT NULL COMMENT 'Number of accounts the account is following',
-  `cumulated_media_count` integer NOT NULL
+  `cumulated_media_count` integer NOT NULL,
+  PRIMARY KEY (`statistic_date`, `user_id`)
 );
 
 CREATE TABLE `STATISTIC`.`media_cumulated_statistic` (
@@ -187,7 +197,8 @@ CREATE TABLE `STATISTIC`.`media_cumulated_statistic` (
   `cumulated_comment_count` integer NOT NULL DEFAULT 0,
   `cumulated_play_count` integer NOT NULL DEFAULT 0,
   `cumulated_view_count` integer NOT NULL DEFAULT 0,
-  `cumulated_mention_count` integer NOT NULL DEFAULT 0
+  `cumulated_mention_count` integer NOT NULL DEFAULT 0,
+  PRIMARY KEY (`statistic_date`, `media_id`)
 );
 
 CREATE TABLE `STATISTIC`.`story_cumulated_statistic` (
@@ -196,20 +207,95 @@ CREATE TABLE `STATISTIC`.`story_cumulated_statistic` (
   `cumulated_like_count` integer NOT NULL DEFAULT 0,
   `cumulated_comment_count` integer NOT NULL DEFAULT 0,
   `cumulated_play_count` integer NOT NULL DEFAULT 0,
-  `cumulated_mention_count` integer NOT NULL DEFAULT 0
+  `cumulated_mention_count` integer NOT NULL DEFAULT 0,
+  PRIMARY KEY (`statistic_date`, `story_id`)
 );
 
 CREATE TABLE `STATISTIC`.`location_cumulated_statistic` (
   `location_id` integer NOT NULL,
   `statistic_date` date NOT NULL COMMENT 'Date the Statistics are referring to',
-  `cumulated_like_count` integer NOT NULL DEFAULT 0
+  `cumulated_like_count` integer NOT NULL DEFAULT 0,
+  PRIMARY KEY (`statistic_date`, `location_id`)
 );
 
 CREATE TABLE `STATISTIC`.`hashtag_cumulated_statistic` (
   `hashtag_id` integer PRIMARY KEY,
   `statistic_date` date NOT NULL COMMENT 'Date the Statistics are referring to',
-  `cumulated_media_count` integer NOT NULL DEFAULT 1
+  `cumulated_media_count` integer NOT NULL DEFAULT 1,
+  PRIMARY KEY (`statistic_date`, `hashtag_id`)
 );
+
+CREATE INDEX ``USER`.user_index_0` ON `USER`.`user` (`user_name`);
+
+CREATE INDEX ``USER`.user_index_1` ON `USER`.`user` (`full_name`);
+
+CREATE INDEX ``USER`.user_index_2` ON `USER`.`user` (`created_at`);
+
+CREATE INDEX ``USER`.user_index_3` ON `USER`.`user` (`updated_at`);
+
+CREATE INDEX ``USER`.user_profile_setting_index_4` ON `USER`.`user_profile_setting` (`has_bio`, `bio`);
+
+CREATE INDEX ``USER`.user_profile_setting_index_5` ON `USER`.`user_profile_setting` (`is_private`);
+
+CREATE INDEX ``USER`.user_profile_setting_index_6` ON `USER`.`user_profile_setting` (`created_at`);
+
+CREATE INDEX ``USER`.user_profile_setting_index_7` ON `USER`.`user_profile_setting` (`updated_at`);
+
+CREATE INDEX ``USER`.user_contact_details_index_8` ON `USER`.`user_contact_details` (`created_at`);
+
+CREATE INDEX ``USER`.user_contact_details_index_9` ON `USER`.`user_contact_details` (`updated_at`);
+
+CREATE INDEX ``USER`.user_adress_index_10` ON `USER`.`user_adress` (`location_id`);
+
+CREATE INDEX ``USER`.user_adress_index_11` ON `USER`.`user_adress` (`country`, `city`);
+
+CREATE INDEX ``USER`.user_adress_index_12` ON `USER`.`user_adress` (`created_at`);
+
+CREATE INDEX ``USER`.user_adress_index_13` ON `USER`.`user_adress` (`updated_at`);
+
+CREATE UNIQUE INDEX ``USER`.user_type_index_14` ON `USER`.`user_type` (`user_type`);
+
+CREATE INDEX ``LOCATION`.location_index_0` ON `LOCATION`.`location` (`name`);
+
+CREATE INDEX ``LOCATION`.location_index_1` ON `LOCATION`.`location` (`country`, `city`);
+
+CREATE INDEX ``LOCATION`.location_index_2` ON `LOCATION`.`location` (`created_at`);
+
+CREATE INDEX ``LOCATION`.location_index_3` ON `LOCATION`.`location` (`updated_at`);
+
+CREATE INDEX ``LOCATION`.location_contact_details_index_4` ON `LOCATION`.`location_contact_details` (`created_at`);
+
+CREATE INDEX ``LOCATION`.location_contact_details_index_5` ON `LOCATION`.`location_contact_details` (`updated_at`);
+
+CREATE INDEX ``MEDIA`.story_index_0` ON `MEDIA`.`story` (`user_id`);
+
+CREATE INDEX ``MEDIA`.story_index_1` ON `MEDIA`.`story` (`media_id`);
+
+CREATE INDEX ``MEDIA`.story_index_2` ON `MEDIA`.`story` (`video_duration_seconds`);
+
+CREATE INDEX ``MEDIA`.story_index_3` ON `MEDIA`.`story` (`publication_datetime`);
+
+CREATE INDEX ``MEDIA`.story_index_4` ON `MEDIA`.`story` (`created_at`);
+
+CREATE INDEX ``MEDIA`.story_index_5` ON `MEDIA`.`story` (`updated_at`);
+
+CREATE INDEX ``MEDIA`.media_index_6` ON `MEDIA`.`media` (`user_id`);
+
+CREATE INDEX ``MEDIA`.media_index_7` ON `MEDIA`.`media` (`location_id`);
+
+CREATE INDEX ``MEDIA`.media_index_8` ON `MEDIA`.`media` (`video_duration_seconds`);
+
+CREATE INDEX ``MEDIA`.media_index_9` ON `MEDIA`.`media` (`publication_datetime`);
+
+CREATE INDEX ``MEDIA`.media_index_10` ON `MEDIA`.`media` (`created_at`);
+
+CREATE INDEX ``MEDIA`.media_index_11` ON `MEDIA`.`media` (`updated_at`);
+
+CREATE INDEX ``MEDIA`.media_type_index_12` ON `MEDIA`.`media_type` (`type`);
+
+CREATE INDEX ``MEDIA`.hashtag_index_13` ON `MEDIA`.`hashtag` (`hashtag_name`);
+
+CREATE INDEX ``MEDIA`.hashtag_index_14` ON `MEDIA`.`hashtag` (`has_profile_pic`);
 
 ALTER TABLE `USER`.`user_adress` ADD FOREIGN KEY (`user_id`) REFERENCES `USER`.`user` (`user_id`);
 
