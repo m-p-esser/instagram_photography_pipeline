@@ -8,3 +8,7 @@ class InstagramRequestParams(BaseModel):
     """Parameters for requesting the Instagram API"""
 
     user_names: list[str] = ["hannes_becker", "daniel_ernst"]
+
+
+class DataProcessingParams(BaseModel):
+    initial_data_ingestion: bool = True
