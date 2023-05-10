@@ -128,51 +128,58 @@ def get_date_newest_file(
     Returns:
         datetime.date: Newest/Max date in Blob Filename(s)
     """
-    # logger = get_run_logger()
+    logger = get_run_logger()
+
+    blob_iterator = gcs_client.list_blobs(bucket_name)
 
     blobs = []
-    # blob_iterator = gcs_client.list_blobs("instagram-raw")
-    sorted_blobs = sorted(blobs, key=lambda blob: blob.created, reverse=True)
-    print(sorted_blobs)
 
-    # if sorted_blobs:
-    #     i.split("/")[-1].split(".")[0].split("_")[-1]
+    # Print blobs at current
+    for blob in blob_iterator:
+        if prefix in blob.name:
+            if f"{prefix}/" not in blob.name:  # Check if virtual Folder
+                blobs.append(blob)
 
-    # )  # bucket_name, prefix)
-    # for i in blob_iterator:
-    #     print(i)
-    #     blobs.append(i)
+    logger.info(f"{len(blobs)} Blobs in list")
 
-    # blob_names = [i.name for _, i in enumerate(blobs)]
-    # logger.info(f"{len(blob_names)} Blobs of loaded Blobs have a name")
+    if len(blobs) == 0:
+        max_date = datetime.date.today()
 
-    # # First remove parent directory, then remove file extension, then isolate date string
-    # blob_date_strings = [
-    #     i.split("/")[-1].split(".")[0].split("_")[-1] for i in blob_names
-    # ]
-    # logger.info(f"{len(blob_date_strings)} Blobs have a date string in the name")
-    # logger.info(
-    #     f"Here is an example Date String contained in the First Blob: {blob_date_strings[0]}"
-    # )
-    # logger.info(
-    #     f"Here is an example Date String contained in the Last Blob: {blob_date_strings[-1]}"
-    # )
+    if len(blobs) > 0:
+        # First remove parent directory, then remove file extension, then isolate date string
+        blob_date_strings = [
+            i.name.split("/")[-1].split(".")[0].split("_")[-1] for i in blobs
+        ]
 
-    # blob_dates = [datetime.date.strptime(i, "%Y-%m-%d") for i in blob_date_strings]
-    # logger.info(
-    #     f"The Date String of {len(blob_dates)} has now been converted to a Date Object"
-    # )
-    # logger.info(
-    #     f"Here is an example Date Object contained in the First Blob: {blob_dates[0]}"
-    # )
-    # logger.info(
-    #     f"Here is an example Date Object contained in the Last Blob: {blob_dates[-1]}"
-    # )
+        logger.info(f"{len(blob_date_strings)} Blobs have a date string in the name")
+        logger.info(
+            f"Here is an example Date String contained in the First Blob: {blob_date_strings[0]}"
+        )
+        logger.info(
+            f"Here is an example Date String contained in the Last Blob: {blob_date_strings[-1]}"
+        )
 
-    # max_date = max(list(set(blob_dates)))
-    # logger.info(f"The Max Date in all Date Objects is: {max_date}")
+        blob_dates = [
+            datetime.datetime.strptime(i, "%Y-%m-%d") for i in blob_date_strings
+        ]
 
-    # return max_date
+        logger.info(
+            f"The Date String of {len(blob_dates)} has now been converted to a Date Object"
+        )
+        logger.info(
+            f"Here is an example Date Object contained in the First Blob: {blob_dates[0]}"
+        )
+        logger.info(
+            f"Here is an example Date Object contained in the Last Blob: {blob_dates[-1]}"
+        )
+
+        max_date = max(list(set(blob_dates)))
+
+    # max_date_string = max_date.strftime("%Y-%m-%d")
+
+    logger.info(f"The Max Date in all Date Objects is: {max_date}")
+
+    return max_date
 
 
 @task
@@ -180,21 +187,21 @@ def create_date_range(max_date: datetime.date) -> list[datetime.date]:
     logger = get_run_logger()
 
     end_date = datetime.date.today()
-    start_date = max_date.copy()
+    start_date = max_date
     logger.info(f"Creating a Date Range from {start_date} to {end_date}")
 
-    days_between_start_and_end_date = end_date - start_date
+    days_between_start_and_end_date = (end_date - start_date).days
     logger.info(
         f"{days_between_start_and_end_date} Days between {start_date} and {end_date}"
     )
 
     date_range = []
 
-    for i in range(days_between_start_and_end_date.days + 1):
+    for i in range(days_between_start_and_end_date + 1):
         date = start_date + datetime.timedelta(days=i)
         date_range.append(date)
 
-    logger.info(f"Created a Data Range of {len(date_range)} Days")
+    logger.info(f"Created a Data Range of {len(date_range)} Day(s)")
     logger.info(f"Date Range: {date_range}")
 
     return date_range
@@ -202,35 +209,46 @@ def create_date_range(max_date: datetime.date) -> list[datetime.date]:
 
 @task
 def get_user_data_to_be_transformed(
-    gcs_client: storage.Client, min_date: datetime.date, max_date: datetime.date
-):
+    gcs_client: storage.Client,
+    min_date: str,
+    max_date: str,
+    prefix: str,
+    bucket_name: str,
+) -> list[storage.blob.Blob]:
     logger = get_run_logger()
 
-    logger.info(
-        f"Loading list of blobs. Using {min_date} as start_offset and {max_date} as end_offset"
-    )
-    blob_iterator = gcs_client.list_blobs(
-        bucket_or_name="instagram-raw",
-        prefix="user",
-        start_offset=min_date,
-        end_offset=max_date,
-    )
-    blobs = [i for i in blob_iterator]
-    logger.info(f"Stored list with {len(blobs)} Blob(s) in memory")
+    logger.info(f"Loading list of blobs. Using {min_date} and {max_date} as filter")
+
+    blobs = []
+
+    blob_iterator = gcs_client.list_blobs(bucket_name)
+
+    for blob in blob_iterator:
+        if prefix in blob.name:
+            if min_date or max_date in blob.name:
+                if f"{prefix}/" not in blob.name:  # Check if virtual Folder
+                    blobs.append(blob)
+
+    logger.info(f"{len(blobs)} Blobs in list")
 
     return blobs
 
 
 @task
-def transform_user_data(blobs) -> pd.DataFrame:
+def transform_user_data(
+    gcs_client: storage.Client, blobs: list[storage.blob.Blob]
+) -> pd.DataFrame:
     logger = get_run_logger()
 
     users = []
 
     logger.info(f"Starting to process {len(blobs)} Blob(s)")
     for blob in blobs:
+        logger.info(f"Processing Blob: {blob}")
+        logger.info(f"Processing Blob: {vars(blob)}")
+        logger.info(f"Processing Blob: {type(blob)}")
         logger.info(f"Processing Blob: {blob.name}")
-        bytes = blob.download_as_bytes()
+        bytes = blob.download_as_bytes(gcs_client)
         user_dict = json.loads(bytes)
 
         user = {}
@@ -343,15 +361,19 @@ def store_raw_user_data_flow(
 def transform_user_data_flow():
     gcs_client = init_gcs_client()
 
-    max_date = get_date_newest_file(gcs_client, "instagram-raw", "user")
-    # SHOULD Be instagram-processed
+    max_date = get_date_newest_file(gcs_client, "instagram-processed", "user")
 
     date_range = create_date_range(max_date)
-    # min_date = min(date_range)
-    max_date = max(date_range)
 
-    # blobs = get_user_data_to_be_transformed(gcs_client, min_date, max_date)
-    # transformed_user_df = transform_user_data(gcs_client, blobs)
+    min_date_string = min(date_range).strftime("%Y-%m-%d")
+    max_date_string = max(date_range).strftime("%Y-%m-%d")
+
+    blobs = get_user_data_to_be_transformed(
+        gcs_client, min_date_string, max_date_string, "instagram-processed", "user"
+    )
+    transformed_user_df = transform_user_data(gcs_client, blobs)
+
+    return transformed_user_df
 
     # validate_transformed_user_data(transformed_user_df)
 
