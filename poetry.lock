@@ -2666,6 +2666,25 @@ dev = ["black", "coverage", "flake8", "google-cloud-aiplatform", "google-cloud-b
 secret-manager = ["google-cloud-secret-manager"]
 
 [[package]]
+name = "prefect-sqlalchemy"
+version = "0.2.4"
+description = "Prefect integrations for interacting with SQLAlchemy."
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "prefect-sqlalchemy-0.2.4.tar.gz", hash = "sha256:d248810f3414f3e13d9a5505d8771620bf3152036e355f0d8ce8d4bab23980cd"},
+    {file = "prefect_sqlalchemy-0.2.4-py3-none-any.whl", hash = "sha256:b16030533bfa8486f831eb3776c2494bf40adb7634d703536aee99458008e4e9"},
+]
+
+[package.dependencies]
+prefect = ">=2.7.0"
+sqlalchemy = ">=1.4.31"
+
+[package.extras]
+dev = ["aiosqlite", "asyncpg", "black", "coverage", "flake8", "interrogate", "isort", "mkdocs", "mkdocs-gen-files", "mkdocs-material", "mkdocstrings[python]", "mock", "mypy", "pillow", "pre-commit", "psycopg2", "pytest", "pytest-asyncio"]
+
+[[package]]
 name = "prompt-toolkit"
 version = "3.0.38"
 description = "Library for building powerful interactive command lines in Python"
@@ -4146,4 +4165,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "3311fc191cb2fff8d6a4869012caba5a1ccb6ee88817bcce30b7f619a4ab13c6"
+content-hash = "9fb32cf985dca2e874c5f3f0ca3c439666f103890e28f59391bd56d8bd27dd30"
