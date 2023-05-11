@@ -1,16 +1,17 @@
 import datetime
 import json
+import pathlib
 
 import instagrapi
 import pandas as pd
 import pandera as pa
 from google.cloud import storage
-from instagrapi.types import HttpUrl, User
+from instagrapi.types import User
 from prefect import flow, get_run_logger, task
 from prefect.blocks.system import Secret
-from prefect.filesystems import GCS, LocalFileSystem
 from prefect.task_runners import ConcurrentTaskRunner, SequentialTaskRunner
 from prefect_gcp import GcpCredentials
+from prefect_sqlalchemy import SqlAlchemyConnector
 
 from src.instagram import challenge_resolver
 from src.utils.config import InstagramRequestParams
@@ -137,7 +138,7 @@ def get_date_newest_file(
     # Print blobs at current
     for blob in blob_iterator:
         if prefix in blob.name:
-            if f"{prefix}/" not in blob.name:  # Check if virtual Folder
+            if f"{prefix}/" != blob.name:  # Check if virtual Folder
                 blobs.append(blob)
 
     logger.info(f"{len(blobs)} Blobs in list")
@@ -183,10 +184,10 @@ def get_date_newest_file(
 
 
 @task
-def create_date_range(max_date: datetime.date) -> list[datetime.date]:
+def create_date_range(max_date: datetime.datetime) -> list[datetime.datetime]:
     logger = get_run_logger()
 
-    end_date = datetime.date.today()
+    end_date = datetime.datetime.now()
     start_date = max_date
     logger.info(f"Creating a Date Range from {start_date} to {end_date}")
 
@@ -225,8 +226,8 @@ def get_user_data_to_be_transformed(
 
     for blob in blob_iterator:
         if prefix in blob.name:
-            if min_date or max_date in blob.name:
-                if f"{prefix}/" not in blob.name:  # Check if virtual Folder
+            if min_date in blob.name or max_date in blob.name:
+                if f"{prefix}/" != blob.name:  # Check if virtual Folder
                     blobs.append(blob)
 
     logger.info(f"{len(blobs)} Blobs in list")
@@ -245,9 +246,6 @@ def transform_user_data(
     logger.info(f"Starting to process {len(blobs)} Blob(s)")
     for blob in blobs:
         logger.info(f"Processing Blob: {blob}")
-        logger.info(f"Processing Blob: {vars(blob)}")
-        logger.info(f"Processing Blob: {type(blob)}")
-        logger.info(f"Processing Blob: {blob.name}")
         bytes = blob.download_as_bytes(gcs_client)
         user_dict = json.loads(bytes)
 
@@ -274,7 +272,7 @@ def transform_user_data(
     logger.info(f"Transforming {len(blobs)} Blob(s) to a Dataframe")
     transformed_user_df = pd.DataFrame(users)
     logger.info(
-        f"Created Dataframe with {transform_user_data.shape[0]} Rows and {transform_user_data.shape[1]} Columns"
+        f"Created Dataframe with {transformed_user_df.shape[0]} Rows and {transformed_user_df.shape[1]} Columns"
     )
     logger.info(
         f"The created Dataframe contains the following columns: {transformed_user_df.columns}"
@@ -289,7 +287,7 @@ def validate_transformed_user_data(transformed_user_df: pd.DataFrame):
 
     schema = pa.DataFrameSchema(
         {
-            "pk": pa.Column(dtype=int, unique=True, report_duplicates="exclude_last"),
+            "pk": pa.Column(dtype=str, unique=True, report_duplicates="exclude_last"),
             "username": pa.Column(
                 dtype=str,
                 unique=True,
@@ -311,36 +309,40 @@ def validate_transformed_user_data(transformed_user_df: pd.DataFrame):
 
 
 @task
-def load_user_data_to_sql(transformed_user_df: pd.DataFrame):
-    pass
-
-    # What options do i have
-
-    # Pandas
-    # ORM (SQL Alchemy) -> Direct SQL
-
-    # MAKE SURE TO RENAME COLUMNS TO MATCH SQL TABLES
-
-    ######## INSERT/UPDATE, INSERT IF NEW USER, UPDATE IF EXISTS
-
-
-@task
 def upload_transformed_user_data(
-    gcs_client: storage.Client, user_df: pd.DataFrame
+    gcs_client: storage.Client, user_df: pd.DataFrame, bucket_name: str
 ) -> storage.bucket.Bucket.blob:
-    # Write to local File
+    logger = get_run_logger()
+
     today = datetime.date.today()  # YYYY-MM-DD
     file_name = f"user_{today}.parquet"
     file_path = f"temp/{file_name}"
     user_df.to_parquet(file_path)
+    logger.info(f"Wrote local file to this path: {file_path}")
 
-    # Load local file to GCS
-    gcs_bucket = gcs_client.get_bucket("instagram-processed")
+    gcs_bucket = gcs_client.get_bucket(bucket_name)
     blob = gcs_bucket.blob(f"user/{file_name}")
     with open(file_path, "rb") as fp:
         blob.upload_from_file(fp)
+        logger.info(
+            f"Wrote {file_path} to Google Cloud Storage in bucket '{bucket_name}'"
+        )
+        pathlib.Path(fp).unlink()
+        logger.info(f"Remove local file {file_path}")
 
     return blob
+
+
+@task
+def load_user_data_to_sql(transformed_user_df: pd.DataFrame, database_block_name: str):
+    data = transformed_user_df.to_dict(orient="records")
+
+    with SqlAlchemyConnector.load(database_block_name) as connector:
+        connector.execute_many(
+            "INSERT INTO user (user_id, account_type_id, user_name, full_name, is_verified, is_business, business_category_name, category_name) VALUES (:pk, :account_type, :username, :full_name, :is_verified, :is_business, :business_category_name, :category_name, :category);",
+            seq_of_parameters=data,
+        )
+        # Handle Duplicate Keys - https://dev.mysql.com/doc/refman/8.0/en/insert-on-duplicate.html
 
 
 @flow(name="Get Raw User Data", log_prints=True, task_runner=ConcurrentTaskRunner)
@@ -369,15 +371,20 @@ def transform_user_data_flow():
     max_date_string = max(date_range).strftime("%Y-%m-%d")
 
     blobs = get_user_data_to_be_transformed(
-        gcs_client, min_date_string, max_date_string, "instagram-processed", "user"
+        gcs_client, min_date_string, max_date_string, "user", "instagram-raw"
     )
     transformed_user_df = transform_user_data(gcs_client, blobs)
 
+    validate_transformed_user_data(transformed_user_df)
+
+    upload_transformed_user_data(gcs_client, transformed_user_df, "instagram-processed")
+
     return transformed_user_df
 
-    # validate_transformed_user_data(transformed_user_df)
 
-    # upload_transformed_user_data(gcs_client, transformed_user_df)
+@flow(name="Store Final User Data", log_prints=True, task_runner=SequentialTaskRunner)
+def store_final_user_data_flow(transformed_user_df, database_block_name: str):
+    load_user_data_to_sql(transformed_user_df, database_block_name)
 
 
 if __name__ == "__main__":
@@ -386,4 +393,6 @@ if __name__ == "__main__":
         instagram_password=Secret.load("instagram-account-password").get(),
         config=InstagramRequestParams(),
     )
-    transform_user_data_flow()
+    transformed_user_df = transform_user_data_flow()
+
+    store_final_user_data_flow(transformed_user_df, "instagram-prod-master-rw-user")
