@@ -161,7 +161,7 @@ def get_date_newest_file(
         )
 
         blob_dates = [
-            datetime.datetime.strptime(i, "%Y-%m-%d") for i in blob_date_strings
+            datetime.datetime.strptime(i, "%Y-%m-%d").date() for i in blob_date_strings
         ]
 
         logger.info(
@@ -184,10 +184,10 @@ def get_date_newest_file(
 
 
 @task
-def create_date_range(max_date: datetime.datetime) -> list[datetime.datetime]:
+def create_date_range(max_date: datetime.date) -> list[datetime.date]:
     logger = get_run_logger()
 
-    end_date = datetime.datetime.now()
+    end_date = datetime.date.today()
     start_date = max_date
     logger.info(f"Creating a Date Range from {start_date} to {end_date}")
 
@@ -226,7 +226,7 @@ def get_user_data_to_be_transformed(
 
     for blob in blob_iterator:
         if prefix in blob.name:
-            if min_date in blob.name or max_date in blob.name:
+            if max_date in blob.name:
                 if f"{prefix}/" != blob.name:  # Check if virtual Folder
                     blobs.append(blob)
 
@@ -327,8 +327,8 @@ def upload_transformed_user_data(
         logger.info(
             f"Wrote {file_path} to Google Cloud Storage in bucket '{bucket_name}'"
         )
-        pathlib.Path(fp).unlink()
-        logger.info(f"Remove local file {file_path}")
+    # pathlib.Path(fp).unlink()
+    # logger.info(f"Remove local file {file_path}")
 
     return blob
 
