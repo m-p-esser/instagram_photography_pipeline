@@ -54,27 +54,6 @@ def init_gcs_client() -> storage.Client:
 
 
 @task
-def get_user_ids(
-    instagrapi_client: instagrapi.Client, config: InstagramRequestParams
-) -> list[str]:
-    logger = get_run_logger()
-
-    user_names = config.user_names
-    logger.info(f"Processing {len(user_names)} Usernames")
-    logger.info(f"Getting User Ids for the following Usernames: \n {user_names}")
-
-    user_ids = []
-    for i in user_names:
-        logger.info(f"Getting User IDs for Username: {i}")
-        user_short = instagrapi_client.user_info_by_username(i)
-        user_id = user_short.__dict__["pk"]
-        user_ids.append(user_id)
-    logger.info(f"Stored User IDs for {len(user_ids)} Usernames")
-
-    return user_names
-
-
-@task
 def get_user_data(
     instagrapi_client: instagrapi.Client, config: InstagramRequestParams
 ) -> list[User]:
@@ -339,10 +318,13 @@ def load_user_data_to_sql(transformed_user_df: pd.DataFrame, database_block_name
 
     with SqlAlchemyConnector.load(database_block_name) as connector:
         connector.execute_many(
-            "INSERT INTO user (user_id, account_type_id, user_name, full_name, is_verified, is_business, business_category_name, category_name, category) VALUES (:pk, :account_type, :username, :full_name, :is_verified, :is_business, :business_category_name, :category_name, :category);",
+            """INSERT INTO user (user_id, account_type_id, user_name, full_name, is_verified, is_business, business_category_name, category_name, category) VALUES (:pk, :account_type, :username, :full_name, :is_verified, :is_business, :business_category_name, :category_name, :category)""",
             seq_of_parameters=data,
         )
         # Handle Duplicate Keys - https://dev.mysql.com/doc/refman/8.0/en/insert-on-duplicate.html
+
+
+# user_name:=username, full_name=:full_name, is_verified=:is_verified, is_business=:is_business, business_category_name=:business_category_name, category_name=:category_name, category=:category
 
 
 @flow(name="Get Raw User Data", log_prints=True, task_runner=ConcurrentTaskRunner)
@@ -352,7 +334,6 @@ def store_raw_user_data_flow(
     instagrapi_client = init_instagrapi_client(instagram_account, instagram_password)
     gcs_client = init_gcs_client()
 
-    # user_ids = get_user_ids(instagrapi_client, config)
     users = get_user_data(instagrapi_client, config)
 
     for i in users:
