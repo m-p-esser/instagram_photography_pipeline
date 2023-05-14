@@ -339,7 +339,7 @@ def load_user_data_to_sql(transformed_user_df: pd.DataFrame, database_block_name
 
     with SqlAlchemyConnector.load(database_block_name) as connector:
         connector.execute_many(
-            "INSERT INTO user (user_id, account_type_id, user_name, full_name, is_verified, is_business, business_category_name, category_name) VALUES (:pk, :account_type, :username, :full_name, :is_verified, :is_business, :business_category_name, :category_name, :category);",
+            "INSERT INTO user (user_id, account_type_id, user_name, full_name, is_verified, is_business, business_category_name, category_name, category) VALUES (:pk, :account_type, :username, :full_name, :is_verified, :is_business, :business_category_name, :category_name, :category);",
             seq_of_parameters=data,
         )
         # Handle Duplicate Keys - https://dev.mysql.com/doc/refman/8.0/en/insert-on-duplicate.html
