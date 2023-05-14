@@ -22,13 +22,13 @@ CREATE TABLE `USER`.`user` (
 
 CREATE TABLE `USER`.`user_profile_setting` (
   `user_id` integer PRIMARY KEY,
-  `profile_pic_url` varchar(255) UNIQUE NOT NULL,
-  `profile_pic_url_hd` varchar(255),
+  `profile_pic_url` varchar(2000) UNIQUE NOT NULL,
+  `profile_pic_url_hd` varchar(2000),
   `has_profile_pic` bool NOT NULL,
   `has_bio` bool NOT NULL,
   `bio` varchar(255) DEFAULT null,
   `is_private` bool NOT NULL,
-  `external_url` varchar(255) COMMENT 'External URL the Bio is linking to',
+  `external_url` varchar(2000) COMMENT 'External URL the Bio is linking to',
   `created_at` timestamp default CURRENT_TIMESTAMP NOT NULL COMMENT 'create time',
   `updated_at` datetime default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL COMMENT 'update time'
 );
@@ -86,7 +86,7 @@ CREATE TABLE `LOCATION`.`location_contact_details` (
   `location_id` integer PRIMARY KEY,
   `phone_number` varchar(255) DEFAULT null,
   `opening_hours` varchar(255) DEFAULT null,
-  `website_url` varchar(255) DEFAULT null,
+  `website_url` varchar(2000) DEFAULT null,
   `created_at` timestamp default CURRENT_TIMESTAMP NOT NULL COMMENT 'create time',
   `updated_at` datetime default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL COMMENT 'update time'
 );
@@ -96,8 +96,8 @@ CREATE TABLE `MEDIA`.`story` (
   `user_id` integer NOT NULL,
   `media_id` integer NOT NULL,
   `media_type_id` integer,
-  `thumbnail_url` varchar(255) DEFAULT null,
-  `video_url` varchar(255) DEFAULT null,
+  `thumbnail_url` varchar(2000) DEFAULT null,
+  `video_url` varchar(2000) DEFAULT null,
   `video_duration_seconds` decimal(9,6) DEFAULT null,
   `product_type` varchar(255) DEFAULT null,
   `publication_datetime` datetime NOT NULL,
@@ -137,9 +137,9 @@ CREATE TABLE `MEDIA`.`media` (
   `media_type_id` integer,
   `title` varchar(255) DEFAULT null,
   `caption` varchar(255) DEFAULT null,
-  `thumbnail_url` varchar(255) DEFAULT null,
+  `thumbnail_url` varchar(2000) DEFAULT null,
   `product_type` varchar(255) DEFAULT null,
-  `video_url` varchar(255) DEFAULT null,
+  `video_url` varchar(2000) DEFAULT null,
   `video_duration_seconds` decimal(9,6) DEFAULT null,
   `has_comments_disabled` bool NOT NULL,
   `publication_datetime` datetime NOT NULL,
@@ -173,7 +173,7 @@ CREATE TABLE `MEDIA`.`media_type` (
 CREATE TABLE `MEDIA`.`hashtag` (
   `hashtag_id` integer PRIMARY KEY,
   `hashtag_name` varchar(255) UNIQUE NOT NULL,
-  `profile_pic_url` varchar(255),
+  `profile_pic_url` varchar(2000),
   `has_profile_pic` bool NOT NULL
 );
 
