@@ -7,7 +7,25 @@ from pydantic import BaseModel
 class InstagramRequestParams(BaseModel):
     """Parameters for requesting the Instagram API"""
 
-    user_names: list[str] = ["hannes_becker", "daniel_ernst"]
+    user_names: list[str] = [
+        "hannes_becker",
+        "daniel_ernst",
+        "martin_walter",
+        "heatonthomas",
+        "fabian.huebner",
+        "germanroamers",
+        "manuela_palmberger",
+        "steven.t.luong",
+        "_vincentefont_",
+        "jacobnordin",
+        "robinxbenjamin",
+        "_marcelsiebert",
+        "carlo_wiewaswo",
+        "marinas.journey",
+        "patricksvisuals",
+        "_talfahrt",
+        "benedikt.hoehny",
+    ]
 
 
 class DataProcessingParams(BaseModel):
