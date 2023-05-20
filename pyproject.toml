@@ -11,18 +11,20 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-requests = "^2.28.2"
-prefect = "^2.10.4"
-prefect-gcp = "^0.4.0"
-gcsfs = "^2023.4.0"
+requests = "^2.30.0"
+prefect = "^2.10.10"
+prefect-gcp = "^0.4.1"
+gcsfs = "^2023.5.0"
 python-dotenv = "^1.0.0"
-instagrapi = "^1.17.6"
-pillow = "^9.5.0"
+instagrapi = "^1.17.10"
 pandas = "^2.0.1"
 pyarrow = "^12.0.0"
-pandera = "^0.14.5"
+pandera = [
+   {version = ">=0.15.1,<0.16.0", python = ">=3.9,<3.12"}
+]
 prefect-sqlalchemy = "^0.2.4"
 pymysql = "^1.0.3"
+pillow = "^9.5.0"
 
 [tool.poetry.dev-dependencies]
 black = "*"
@@ -31,8 +33,8 @@ pre-commit = "*"
 isort = "*"
 
 [tool.poetry.group.dev.dependencies]
-ipykernel = "^6.22.0"
 pytest = "^7.3.1"
+ipykernel = "^6.23.1"
 
 [build-system]
 requires = ["poetry-core"]
