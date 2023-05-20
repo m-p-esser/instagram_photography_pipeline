@@ -30,6 +30,7 @@ class InstagramRequestParams(BaseModel):
 
 class DataProcessingParams(BaseModel):
     is_initial_data_ingestion: bool = True
+    user_database_block_name: str = "instagram-prod-master-rw-user"
 
 
 class SourceToTargetKeyMapping(BaseModel):
