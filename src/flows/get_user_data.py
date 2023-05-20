@@ -1,6 +1,5 @@
 import datetime
 import json
-import pathlib
 
 import instagrapi
 import pandas as pd
@@ -13,8 +12,11 @@ from prefect.task_runners import ConcurrentTaskRunner, SequentialTaskRunner
 from prefect_gcp import GcpCredentials
 from prefect_sqlalchemy import SqlAlchemyConnector
 
-from src.instagram import challenge_resolver
-from src.utils.config import InstagramRequestParams
+from src.utils.config import (
+    DataProcessingParams,
+    InstagramRequestParams,
+    SourceToTargetKeyMapping,
+)
 from src.utils.serializer import CustomJSONEncoder
 
 
@@ -66,9 +68,14 @@ def get_user_data(
     user_names = config.user_names
     users = []
     for i in user_names:
-        logger.info(f"Getting User Date for Username: {i}")
-        user = instagrapi_client.user_info_by_username(i)
-        users.append(user)
+        logger.info(f"Getting User data for Username: {i}")
+        try:
+            user = instagrapi_client.user_info_by_username(i)
+            users.append(user)
+        except Exception as e:
+            logger.error(
+                f"Exception {e} occured while collecting User data for Username: {i}"
+            )
 
     logger.info(f"Stored User Data for {len(users)} Usernames")
 
@@ -215,9 +222,20 @@ def get_user_data_to_be_transformed(
 
 
 @task
-def transform_user_data(
-    gcs_client: storage.Client, blobs: list[storage.blob.Blob]
+def user_data_to_df(
+    gcs_client: storage.Client, blobs: list[storage.blob.Blob], keys: list[str]
 ) -> pd.DataFrame:
+    """Store Data in Dataframe
+
+    Args:
+        gcs_client (storage.Client): GCS Client
+        blobs (list[storage.blob.Blob]): List of Blobs
+        keys (list[str]): Keys in Raw data that should be mapped to Database Table
+
+    Returns:
+        pd.DataFrame: Dataframe holding all User data for this run
+    """
+
     logger = get_run_logger()
 
     users = []
@@ -230,18 +248,6 @@ def transform_user_data(
 
         user = {}
 
-        keys = [
-            "pk",
-            "username",
-            "full_name",
-            "is_verified",
-            "account_type",
-            "is_business",
-            "business_category_name",
-            "category_name",
-            "category",
-        ]
-
         for k in keys:
             user_attribute = user_dict.get(k, None)
             user[k] = user_attribute
@@ -249,19 +255,29 @@ def transform_user_data(
         users.append(user)
 
     logger.info(f"Transforming {len(blobs)} Blob(s) to a Dataframe")
-    transformed_user_df = pd.DataFrame(users)
+    user_data_df = pd.DataFrame(users)
     logger.info(
-        f"Created Dataframe with {transformed_user_df.shape[0]} Rows and {transformed_user_df.shape[1]} Columns"
+        f"Created Dataframe with {user_data_df.shape[0]} Rows and {user_data_df.shape[1]} Columns"
     )
     logger.info(
-        f"The created Dataframe contains the following columns: {transformed_user_df.columns}"
+        f"The created Dataframe contains the following columns: {user_data_df.columns}"
     )
 
-    return transformed_user_df
+    return user_data_df
+
+
+@task
+def transform_user_profile_setting_data(df: pd.DataFrame) -> pd.DataFrame:
+    df["has_bio"] = df["biography"].apply(lambda x: True if x[0] is not None else False)
+    df["has_profile_pic"] = df["profile_pic_url"].apply(
+        lambda x: True if x[0] is not None else False
+    )
+    return df
 
 
 @task
 def validate_transformed_user_data(transformed_user_df: pd.DataFrame):
+    """Validation for `USER.user` table"""
     logger = get_run_logger()
 
     schema = pa.DataFrameSchema(
@@ -288,13 +304,38 @@ def validate_transformed_user_data(transformed_user_df: pd.DataFrame):
 
 
 @task
+def validate_transformed_user_profile_setting_data(transformed_user_df: pd.DataFrame):
+    """Validation for `USER.user_profile_setting` table"""
+    logger = get_run_logger()
+
+    schema = pa.DataFrameSchema(
+        {
+            "pk": pa.Column(dtype=str, unique=True, report_duplicates="exclude_last"),
+            "profile_pic_url": pa.Column(dtype=str),  # Probably should be nullable
+            "profile_pic_url_hd": pa.Column(dtype=str, nullable=True),
+            "has_profile_pic": pa.Column(dtype=bool),
+            "is_private": pa.Column(dtype=bool),
+            "has_bio": pa.Column(dtype=bool),
+            "biography": pa.Column(dtype=str, nullable=True),
+            "external_url": pa.Column(dtype=str, nullable=True),
+        }
+    )
+    logger.info(f"Validating with the following Schema: {schema}")
+    schema.validate(transformed_user_df)
+    logger.info("Dataframe has been validated successfully")
+
+
+@task
 def upload_transformed_user_data(
-    gcs_client: storage.Client, user_df: pd.DataFrame, bucket_name: str
+    gcs_client: storage.Client,
+    user_df: pd.DataFrame,
+    bucket_name: str,
+    file_prefix: str,
 ) -> storage.bucket.Bucket.blob:
     logger = get_run_logger()
 
     today = datetime.date.today()  # YYYY-MM-DD
-    file_name = f"user_{today}.parquet"
+    file_name = f"{file_prefix}_{today}.parquet"
     file_path = f"temp/{file_name}"
     user_df.to_parquet(file_path)
     logger.info(f"Wrote local file to this path: {file_path}")
@@ -313,18 +354,71 @@ def upload_transformed_user_data(
 
 
 @task
-def load_user_data_to_sql(transformed_user_df: pd.DataFrame, database_block_name: str):
+def load_user_data_to_sql(
+    transformed_user_df: pd.DataFrame,
+    database_block_name: str,
+    is_initial_data_ingestion: bool = False,
+):
+    logger = get_run_logger()
+
+    logger.info(
+        f"Dataframe that should be ingested, contains {transformed_user_df.shape[0]} rows"
+    )
     data = transformed_user_df.to_dict(orient="records")
 
+    TABLE_NAME = "`USER.user`"
+
     with SqlAlchemyConnector.load(database_block_name) as connector:
+        logger.info(f"Connected to Database with Block name: {database_block_name}")
+        if is_initial_data_ingestion:
+            logger.info(f"Truncating table: {TABLE_NAME}")
+            connector.execute("SET FOREIGN_KEY_CHECKS = 0;")
+            connector.execute("TRUNCATE TABLE USER.user;")
+            connector.execute("SET FOREIGN_KEY_CHECKS = 1;")
+        logger.info(f"Writing to {TABLE_NAME} Table")
         connector.execute_many(
-            """INSERT INTO user (user_id, account_type_id, user_name, full_name, is_verified, is_business, business_category_name, category_name, category) VALUES (:pk, :account_type, :username, :full_name, :is_verified, :is_business, :business_category_name, :category_name, :category)""",
+            "INSERT INTO USER.user (user_id, account_type_id, user_name, full_name, is_verified, is_business, business_category_name, category_name, category) VALUES (:pk, :account_type, :username, :full_name, :is_verified, :is_business, :business_category_name, :category_name, :category)",
             seq_of_parameters=data,
         )
         # Handle Duplicate Keys - https://dev.mysql.com/doc/refman/8.0/en/insert-on-duplicate.html
 
+    logger.info(
+        f"Wrote {len(data)} rows to Database with Prefect Block name '{database_block_name}'"
+    )
 
-# user_name:=username, full_name=:full_name, is_verified=:is_verified, is_business=:is_business, business_category_name=:business_category_name, category_name=:category_name, category=:category
+
+@task
+def load_user_profile_setting_data_to_sql(
+    transformed_user_df: pd.DataFrame,
+    database_block_name: str,
+    is_initial_data_ingestion: bool = False,
+):
+    logger = get_run_logger()
+
+    logger.info(
+        f"Dataframe that should be ingested, contains {transformed_user_df.shape[0]} rows"
+    )
+    data = transformed_user_df.to_dict(orient="records")
+
+    TABLE_NAME = "`USER.user_profile_setting`"
+
+    with SqlAlchemyConnector.load(database_block_name) as connector:
+        logger.info(f"Connected to Database with Block name: {database_block_name}")
+        if is_initial_data_ingestion:
+            logger.info(f"Truncating table: {TABLE_NAME}")
+            connector.execute("SET FOREIGN_KEY_CHECKS = 0;")
+            connector.execute("TRUNCATE TABLE USER.user_profile_setting;")
+            connector.execute("SET FOREIGN_KEY_CHECKS = 1;")
+        logger.info(f"Writing to {TABLE_NAME} Table")
+        connector.execute_many(
+            "INSERT INTO USER.user_profile_setting (user_id, profile_pic_url, profile_pic_url_hd, has_profile_pic, is_private, has_bio, bio, external_url) VALUES (:pk, :profile_pic_url, :profile_pic_url_hd, :has_profile_pic, :is_private, :has_bio, :biography, :external_url)",
+            seq_of_parameters=data,
+        )
+        # Handle Duplicate Keys - https://dev.mysql.com/doc/refman/8.0/en/insert-on-duplicate.html
+
+    logger.info(
+        f"Wrote {len(data)} rows to Database with Prefect Block name '{database_block_name}'"
+    )
 
 
 @flow(name="Get Raw User Data", log_prints=True, task_runner=ConcurrentTaskRunner)
@@ -341,7 +435,9 @@ def store_raw_user_data_flow(
 
 
 @flow(name="Transform User Data", log_prints=True, task_runner=SequentialTaskRunner)
-def transform_user_data_flow():
+def transform_user_data_flow(
+    mapping: SourceToTargetKeyMapping, processing_params: DataProcessingParams
+):
     gcs_client = init_gcs_client()
 
     max_date = get_date_newest_file(gcs_client, "instagram-processed", "user")
@@ -354,18 +450,47 @@ def transform_user_data_flow():
     blobs = get_user_data_to_be_transformed(
         gcs_client, min_date_string, max_date_string, "user", "instagram-raw"
     )
-    transformed_user_df = transform_user_data(gcs_client, blobs)
 
-    validate_transformed_user_data(transformed_user_df)
+    # Transformed data which will be stored in `USER.user` later on
+    user_df = user_data_to_df(gcs_client, blobs, mapping.user_keys)
+    validate_transformed_user_data(user_df)
+    upload_transformed_user_data(gcs_client, user_df, "instagram-processed", "user")
 
-    upload_transformed_user_data(gcs_client, transformed_user_df, "instagram-processed")
+    # Transformed data which will be stored in `USER.user_profile_setting` later on
+    user_profile_setting_df = user_data_to_df(
+        gcs_client, blobs, mapping.user_profile_setting_keys
+    )
+    user_profile_setting_df = transform_user_profile_setting_data(
+        user_profile_setting_df
+    )
+    validate_transformed_user_profile_setting_data(user_profile_setting_df)
+    upload_transformed_user_data(
+        gcs_client,
+        user_profile_setting_df,
+        "instagram-processed",
+        "user_profile_setting",
+    )
 
-    return transformed_user_df
+    return (user_df, user_profile_setting_df)
 
 
 @flow(name="Store Final User Data", log_prints=True, task_runner=SequentialTaskRunner)
-def store_final_user_data_flow(transformed_user_df, database_block_name: str):
-    load_user_data_to_sql(transformed_user_df, database_block_name)
+def store_final_user_data_flow(
+    transformed_user_dfs: tuple,
+    database_block_name: str,
+    processing_params: DataProcessingParams,
+):
+    user_df = transformed_user_dfs[0]
+    load_user_data_to_sql(
+        user_df, database_block_name, processing_params.is_initial_data_ingestion
+    )
+
+    user_profile_setting_df = transformed_user_dfs[1]
+    load_user_profile_setting_data_to_sql(
+        user_profile_setting_df,
+        database_block_name,
+        processing_params.is_initial_data_ingestion,
+    )
 
 
 if __name__ == "__main__":
@@ -374,6 +499,12 @@ if __name__ == "__main__":
         instagram_password=Secret.load("instagram-account-password").get(),
         config=InstagramRequestParams(),
     )
-    transformed_user_df = transform_user_data_flow()
+    transformed_user_dfs = transform_user_data_flow(
+        mapping=SourceToTargetKeyMapping(), processing_params=DataProcessingParams()
+    )
 
-    store_final_user_data_flow(transformed_user_df, "instagram-prod-master-rw-user")
+    # store_final_user_data_flow(
+    #     transformed_user_dfs=transformed_user_dfs,
+    #     database_block_name="instagram-prod-master-rw-user",
+    #     processing_params=DataProcessingParams(),
+    # )
