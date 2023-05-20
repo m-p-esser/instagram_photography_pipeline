@@ -287,7 +287,6 @@ def validate_transformed_user_data(transformed_user_df: pd.DataFrame):
                 dtype=str,
                 unique=True,
                 report_duplicates="exclude_last",
-                checks=[pa.Check.str_contains("_")],
             ),
             "full_name": pa.Column(dtype=str),
             "is_verified": pa.Column(dtype=bool),
