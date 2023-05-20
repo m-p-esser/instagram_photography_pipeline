@@ -269,6 +269,7 @@ def user_data_to_df(
 @task
 def transform_user_profile_setting_data(df: pd.DataFrame) -> pd.DataFrame:
     df["pk"] = df["pk"].astype("int64")
+    df["biography"] = df["biography"].str.replace("\n", " ")
     df["has_bio"] = df["biography"].apply(lambda x: True if x[0] is not None else False)
     df["has_profile_pic"] = df["profile_pic_url"].apply(
         lambda x: True if x[0] is not None else False
@@ -383,10 +384,13 @@ def load_user_data_to_sql(
             connector.execute("SET FOREIGN_KEY_CHECKS = 1;")
         logger.info(f"Writing to {TABLE_NAME} Table")
         connector.execute_many(
-            "INSERT INTO USER.user (user_id, account_type_id, user_name, full_name, is_verified, is_business, business_category_name, category_name, category) VALUES (:pk, :account_type, :username, :full_name, :is_verified, :is_business, :business_category_name, :category_name, :category)",
+            """
+            INSERT INTO USER.user (user_id, account_type_id, user_name, full_name, is_verified, is_business, business_category_name, category_name, category)
+            VALUES (:pk, :account_type, :username, :full_name, :is_verified, :is_business, :business_category_name, :category_name, :category)
+            ON DUPLICATE KEY UPDATE account_type_id=VALUES(account_type_id), user_name=VALUES(user_name), full_name=VALUES(full_name), is_verified=VALUES(is_verified), is_business=VALUES(is_business), business_category_name=VALUES(business_category_name), category_name=VALUES(category_name), category=VALUES(category);
+            """,
             seq_of_parameters=data,
         )
-        # Handle Duplicate Keys - https://dev.mysql.com/doc/refman/8.0/en/insert-on-duplicate.html
 
     logger.info(
         f"Wrote {len(data)} rows to Database with Prefect Block name '{database_block_name}'"
@@ -417,10 +421,13 @@ def load_user_profile_setting_data_to_sql(
             connector.execute("SET FOREIGN_KEY_CHECKS = 1;")
         logger.info(f"Writing to {TABLE_NAME} Table")
         connector.execute_many(
-            "INSERT INTO USER.user_profile_setting (user_id, profile_pic_url, profile_pic_url_hd, has_profile_pic, is_private, has_bio, bio, external_url) VALUES (:pk, :profile_pic_url, :profile_pic_url_hd, :has_profile_pic, :is_private, :has_bio, :biography, :external_url)",
+            """
+            INSERT INTO USER.user_profile_setting (user_id, profile_pic_url, profile_pic_url_hd, has_profile_pic, is_private, has_bio, bio, external_url)
+            VALUES (:pk, :profile_pic_url, :profile_pic_url_hd, :has_profile_pic, :is_private, :has_bio, :biography, :external_url)
+            ON DUPLICATE KEY UPDATE profile_pic_url=VALUES(profile_pic_url), profile_pic_url_hd=VALUES(profile_pic_url_hd), has_profile_pic=VALUES(has_profile_pic), is_private=VALUES(is_private), has_bio=VALUES(has_bio), external_url=VALUES(external_url)
+            """,
             seq_of_parameters=data,
         )
-        # Handle Duplicate Keys - https://dev.mysql.com/doc/refman/8.0/en/insert-on-duplicate.html
 
     logger.info(
         f"Wrote {len(data)} rows to Database with Prefect Block name '{database_block_name}'"
@@ -484,18 +491,19 @@ def transform_user_data_flow(
 @flow(name="Store Final User Data", log_prints=True, task_runner=SequentialTaskRunner)
 def store_final_user_data_flow(
     transformed_user_dfs: tuple,
-    database_block_name: str,
     processing_params: DataProcessingParams,
 ):
     user_df = transformed_user_dfs[0]
     load_user_data_to_sql(
-        user_df, database_block_name, processing_params.is_initial_data_ingestion
+        user_df,
+        processing_params.user_database_block_name,
+        processing_params.is_initial_data_ingestion,
     )
 
     user_profile_setting_df = transformed_user_dfs[1]
     load_user_profile_setting_data_to_sql(
         user_profile_setting_df,
-        database_block_name,
+        processing_params.user_database_block_name,
         processing_params.is_initial_data_ingestion,
     )
 
@@ -512,6 +520,5 @@ if __name__ == "__main__":
 
     store_final_user_data_flow(
         transformed_user_dfs=transformed_user_dfs,
-        database_block_name="instagram-prod-master-rw-user",
         processing_params=DataProcessingParams(),
     )
