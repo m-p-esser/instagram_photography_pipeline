@@ -1,13 +1,13 @@
-CREATE SCHEMA `USER` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+CREATE SCHEMA `USER` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-CREATE SCHEMA `LOCATION` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;;
+CREATE SCHEMA `LOCATION` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-CREATE SCHEMA `MEDIA` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;;
+CREATE SCHEMA `MEDIA` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-CREATE SCHEMA `STATISTIC` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;;
+CREATE SCHEMA `STATISTIC` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE `USER`.`user` (
-  `user_id` integer PRIMARY KEY,
+  `user_id` bigint UNSIGNED PRIMARY KEY,
   `account_type_id` int DEFAULT null,
   `user_name` varchar(255) UNIQUE NOT NULL,
   `full_name` varchar(255) DEFAULT null,
@@ -21,20 +21,20 @@ CREATE TABLE `USER`.`user` (
 );
 
 CREATE TABLE `USER`.`user_profile_setting` (
-  `user_id` integer PRIMARY KEY,
-  `profile_pic_url` varchar(2000) UNIQUE NOT NULL,
-  `profile_pic_url_hd` varchar(2000),
+  `user_id` bigint UNSIGNED PRIMARY KEY,
+  `profile_pic_url` varchar(768) UNIQUE NOT NULL,
+  `profile_pic_url_hd` varchar(768),
   `has_profile_pic` bool NOT NULL,
   `has_bio` bool NOT NULL,
   `bio` varchar(255) DEFAULT null,
   `is_private` bool NOT NULL,
-  `external_url` varchar(2000) COMMENT 'External URL the Bio is linking to',
+  `external_url` varchar(768) COMMENT 'External URL the Bio is linking to',
   `created_at` timestamp default CURRENT_TIMESTAMP NOT NULL COMMENT 'create time',
   `updated_at` datetime default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL COMMENT 'update time'
 );
 
 CREATE TABLE `USER`.`user_contact_details` (
-  `user_id` integer PRIMARY KEY,
+  `user_id` bigint UNSIGNED PRIMARY KEY,
   `contact_phone_number` varchar(255) DEFAULT null,
   `public_phone_number` varchar(255) DEFAULT null,
   `public_phone_country_code` varchar(255) DEFAULT null,
@@ -45,7 +45,7 @@ CREATE TABLE `USER`.`user_contact_details` (
 );
 
 CREATE TABLE `USER`.`user_adress` (
-  `user_id` integer PRIMARY KEY,
+  `user_id` bigint UNSIGNED PRIMARY KEY,
   `location_id` integer,
   `longitude` decimal(9,6) DEFAULT null,
   `latitude` decimal(8,6) DEFAULT null,
@@ -63,7 +63,7 @@ CREATE TABLE `USER`.`account_type` (
 );
 
 CREATE TABLE `USER`.`follower` (
-  `user_id` integer NOT NULL,
+  `user_id` bigint UNSIGNED NOT NULL,
   `follower_id` integer NOT NULL COMMENT 'User which is following the account',
   PRIMARY KEY (`user_id`, `follower_id`)
 );
@@ -86,18 +86,18 @@ CREATE TABLE `LOCATION`.`location_contact_details` (
   `location_id` integer PRIMARY KEY,
   `phone_number` varchar(255) DEFAULT null,
   `opening_hours` varchar(255) DEFAULT null,
-  `website_url` varchar(2000) DEFAULT null,
+  `website_url` varchar(768) DEFAULT null,
   `created_at` timestamp default CURRENT_TIMESTAMP NOT NULL COMMENT 'create time',
   `updated_at` datetime default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL COMMENT 'update time'
 );
 
 CREATE TABLE `MEDIA`.`story` (
   `story_id` integer PRIMARY KEY,
-  `user_id` integer NOT NULL,
+  `user_id` bigint UNSIGNED NOT NULL,
   `media_id` integer NOT NULL,
   `media_type_id` integer,
-  `thumbnail_url` varchar(2000) DEFAULT null,
-  `video_url` varchar(2000) DEFAULT null,
+  `thumbnail_url` varchar(768) DEFAULT null,
+  `video_url` varchar(768) DEFAULT null,
   `video_duration_seconds` decimal(9,6) DEFAULT null,
   `product_type` varchar(255) DEFAULT null,
   `publication_datetime` datetime NOT NULL,
@@ -107,7 +107,7 @@ CREATE TABLE `MEDIA`.`story` (
 
 CREATE TABLE `MEDIA`.`story_mention` (
   `story_id` integer NOT NULL,
-  `user_id` integer NOT NULL,
+  `user_id` bigint UNSIGNED NOT NULL,
   `is_sponsor` bool NOT NULL DEFAULT False,
   PRIMARY KEY (`story_id`, `user_id`)
 );
@@ -132,14 +132,14 @@ CREATE TABLE `MEDIA`.`story_media` (
 
 CREATE TABLE `MEDIA`.`media` (
   `media_id` integer PRIMARY KEY,
-  `user_id` integer NOT NULL,
+  `user_id` bigint UNSIGNED NOT NULL,
   `location_id` integer,
   `media_type_id` integer,
   `title` varchar(255) DEFAULT null,
   `caption` varchar(255) DEFAULT null,
-  `thumbnail_url` varchar(2000) DEFAULT null,
+  `thumbnail_url` varchar(768) DEFAULT null,
   `product_type` varchar(255) DEFAULT null,
-  `video_url` varchar(2000) DEFAULT null,
+  `video_url` varchar(768) DEFAULT null,
   `video_duration_seconds` decimal(9,6) DEFAULT null,
   `has_comments_disabled` bool NOT NULL,
   `publication_datetime` datetime NOT NULL,
@@ -173,7 +173,7 @@ CREATE TABLE `MEDIA`.`media_type` (
 CREATE TABLE `MEDIA`.`hashtag` (
   `hashtag_id` integer PRIMARY KEY,
   `hashtag_name` varchar(255) UNIQUE NOT NULL,
-  `profile_pic_url` varchar(2000),
+  `profile_pic_url` varchar(768),
   `has_profile_pic` bool NOT NULL
 );
 
@@ -184,7 +184,7 @@ CREATE TABLE `MEDIA`.`related_hashtag` (
 );
 
 CREATE TABLE `STATISTIC`.`user_cumulated_statistic` (
-  `user_id` integer NOT NULL,
+  `user_id` bigint UNSIGNED NOT NULL,
   `statistic_date` date NOT NULL COMMENT 'Date the Statistics are referring to',
   `cumulated_follower_count` integer NOT NULL COMMENT 'Number of accounts that are following this account',
   `cumulated_following_count` integer NOT NULL COMMENT 'Number of accounts the account is following',

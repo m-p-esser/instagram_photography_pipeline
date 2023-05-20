@@ -1,0 +1,388 @@
+Table "USER"."user" {
+  "user_id" bigint [pk]
+  "account_type_id" int [default: null]
+  "user_name" varchar(255) [unique, not null]
+  "full_name" varchar(255) [default: null]
+  "is_verified" bool [not null]
+  "is_business" bool [not null]
+  "business_category_name" varchar(255) [default: null]
+  "category_name" varchar(255) [default: null]
+  "category" varchar(255) [default: null]
+  "created_at" timestamp [not null, default: `CURRENT_TIMESTAMP`, note: 'create time']
+  "updated_at" datetime [not null, default: `CURRENT_TIMESTAMP`, note: 'update time']
+
+Indexes {
+  user_name [name: "user_name_index"]
+  account_type_id [name: "account_type_index"]
+  full_name [name: "full_name_index"]
+  created_at [name: "created_at_index"]
+  updated_at [name: "updated_at_index"]
+}
+}
+
+Table "USER"."user_profile_setting" {
+  "user_id" bigint [pk]
+  "profile_pic_url" varchar(768) [unique, not null]
+  "profile_pic_url_hd" varchar(768)
+  "has_profile_pic" bool [not null]
+  "has_bio" bool [not null]
+  "bio" varchar(255) [default: null]
+  "is_private" bool [not null]
+  "external_url" varchar(768) [note: 'External URL the Bio is linking to']
+  "created_at" timestamp [not null, default: `CURRENT_TIMESTAMP`, note: 'create time']
+  "updated_at" datetime [not null, default: `CURRENT_TIMESTAMP`, note: 'update time']
+
+Indexes {
+  (has_bio, bio) [name: "has_bio_bio_index"]
+  is_private [name: "is_privat_index"]
+  created_at [name: "created_at_index"]
+  updated_at [name: "updated_at_index"]
+}
+}
+
+Table "USER"."user_contact_details" {
+  "user_id" bigint [pk]
+  "contact_phone_number" varchar(255) [default: null]
+  "public_phone_number" varchar(255) [default: null]
+  "public_phone_country_code" varchar(255) [default: null]
+  "business_contact_method" varchar(255) [default: null]
+  "public_email" varchar(255) [default: null]
+  "created_at" timestamp [not null, default: `CURRENT_TIMESTAMP`, note: 'create time']
+  "updated_at" datetime [not null, default: `CURRENT_TIMESTAMP`, note: 'update time']
+
+Indexes {
+  created_at [name: "created_at_index"]
+  updated_at [name: "updated_at_index"]
+}
+}
+
+Table "USER"."user_adress" {
+  "user_id" bigint [pk]
+  "location_id" integer
+  "longitude" decimal(9,6) [default: null]
+  "latitude" decimal(8,6) [default: null]
+  "street" varchar(255) [default: null]
+  "city" varchar(255) [default: null]
+  "zip" varchar(255) [default: null]
+  "country" varchar(255) [default: null]
+  "created_at" timestamp [not null, default: `CURRENT_TIMESTAMP`, note: 'create time']
+  "updated_at" datetime [not null, default: `CURRENT_TIMESTAMP`, note: 'update time']
+
+Indexes {
+  location_id [name: "location_id_index"]
+  (country, city) [name: "country_city_index"]
+  created_at [name: "created_at_index"]
+  updated_at [name: "updated_at_index"]
+}
+}
+
+Table "USER"."account_type" {
+  "account_type_id" integer [pk]
+  "account_type" varchar(255) [not null]
+
+Indexes {
+  account_type [unique, name: "account_type_index"]
+}
+}
+
+Table "USER"."follower" {
+  "user_id" bigint [not null]
+  "follower_id" integer [not null, note: 'User which is following the account']
+
+Indexes {
+  (user_id, follower_id) [pk]
+}
+}
+
+Table "LOCATION"."location" {
+  "location_id" integer [pk]
+  "name" varchar(255) [not null]
+  "category" varchar(255) [default: null]
+  "longitude" decimal(9,6) [default: null]
+  "latitude" decimal(8,6) [default: null]
+  "street" varchar(255) [default: null]
+  "city" varchar(255) [default: null]
+  "zip" varchar(255) [default: null]
+  "country" varchar(255) [default: null]
+  "created_at" timestamp [not null, default: `CURRENT_TIMESTAMP`, note: 'create time']
+  "updated_at" datetime [not null, default: `CURRENT_TIMESTAMP`, note: 'update time']
+
+Indexes {
+  name [name: "name_index"]
+  (country, city) [name: "country_city_index"]
+  created_at [name: "created_at_index"]
+  updated_at [name: "updated_at_index"]
+}
+}
+
+Table "LOCATION"."location_contact_details" {
+  "location_id" integer [pk]
+  "phone_number" varchar(255) [default: null]
+  "opening_hours" varchar(255) [default: null]
+  "website_url" varchar(768) [default: null]
+  "created_at" timestamp [not null, default: `CURRENT_TIMESTAMP`, note: 'create time']
+  "updated_at" datetime [not null, default: `CURRENT_TIMESTAMP`, note: 'update time']
+
+Indexes {
+  created_at [name: "created_at_index"]
+  updated_at [name: "updated_at_index"]
+}
+}
+
+Table "MEDIA"."story" {
+  "story_id" integer [pk]
+  "user_id" bigint [not null]
+  "media_id" integer [not null]
+  "media_type_id" integer
+  "thumbnail_url" varchar(768) [default: null]
+  "video_url" varchar(768) [default: null]
+  "video_duration_seconds" decimal(9,6) [default: null]
+  "product_type" varchar(255) [default: null]
+  "publication_datetime" datetime [not null]
+  "created_at" timestamp [not null, default: `CURRENT_TIMESTAMP`, note: 'create time']
+  "updated_at" datetime [not null, default: `CURRENT_TIMESTAMP`, note: 'update time']
+
+Indexes {
+  user_id [name: "user_id_index"]
+  media_id [name: "media_id_index"]
+  media_type_id [name: "media_type_id_index"]
+  video_duration_seconds [name: "video_duration_seconds_index"]
+  publication_datetime [name: "publication_datetime_index"]
+  created_at [name: "created_at_index"]
+  updated_at [name: "updated_at_index"]
+}
+}
+
+Table "MEDIA"."story_mention" {
+  "story_id" integer [not null]
+  "user_id" bigint [not null]
+  "is_sponsor" bool [not null, default: False]
+
+Indexes {
+  (story_id, user_id) [pk]
+}
+}
+
+Table "MEDIA"."story_location" {
+  "story_id" integer [not null]
+  "location_id" integer [not null]
+
+Indexes {
+  (story_id, location_id) [pk]
+}
+}
+
+Table "MEDIA"."story_hashtag" {
+  "story_id" integer [not null]
+  "hashtag_id" integer [not null]
+
+Indexes {
+  (story_id, hashtag_id) [pk]
+}
+}
+
+Table "MEDIA"."story_media" {
+  "story_id" integer [not null]
+  "media_id" integer [not null]
+
+Indexes {
+  (story_id, media_id) [pk]
+}
+}
+
+Table "MEDIA"."media" {
+  "media_id" integer [pk]
+  "user_id" bigint [not null]
+  "location_id" integer
+  "media_type_id" integer
+  "title" varchar(255) [default: null]
+  "caption" varchar(255) [default: null]
+  "thumbnail_url" varchar(768) [default: null]
+  "product_type" varchar(255) [default: null]
+  "video_url" varchar(768) [default: null]
+  "video_duration_seconds" decimal(9,6) [default: null]
+  "has_comments_disabled" bool [not null]
+  "publication_datetime" datetime [not null]
+  "created_at" timestamp [not null, default: `CURRENT_TIMESTAMP`, note: 'create time']
+  "updated_at" datetime [not null, default: `CURRENT_TIMESTAMP`, note: 'update time']
+
+Indexes {
+  user_id [name: "user_id_index"]
+  location_id [name: "location_id_index"]
+  media_type_id [name: "media_type_id_index"]
+  video_duration_seconds [name: "video_duration_seconds_index"]
+  publication_datetime [name: "publication_datetime_index"]
+  created_at [name: "created_at_index"]
+  updated_at [name: "updated_at_index"]
+}
+}
+
+Table "MEDIA"."media_usertag" {
+  "media_id" integer [not null]
+  "user_id" integer [not null]
+
+Indexes {
+  (media_id, user_id) [pk]
+}
+}
+
+Table "MEDIA"."media_hashtag" {
+  "media_id" integer [not null]
+  "hashtag_id" integer [not null]
+
+Indexes {
+  (media_id, hashtag_id) [pk]
+}
+}
+
+Table "MEDIA"."media_sponsor" {
+  "media_id" integer [not null]
+  "user_id" integer [not null]
+
+Indexes {
+  (media_id, user_id) [pk]
+}
+}
+
+Table "MEDIA"."media_type" {
+  "media_type_id" integer [pk]
+  "type" varchar(255)
+
+Indexes {
+  type [unique, name: "type_index"]
+}
+}
+
+Table "MEDIA"."hashtag" {
+  "hashtag_id" integer [pk]
+  "hashtag_name" varchar(255) [unique, not null]
+  "profile_pic_url" varchar(768)
+  "has_profile_pic" bool [not null]
+
+Indexes {
+  hashtag_name [name: "hashtag_name_index"]
+  has_profile_pic [name: "has_profile_pic_index"]
+}
+}
+
+Table "MEDIA"."related_hashtag" {
+  "hashtag_id" integer [not null]
+  "related_hashtag_id" integer
+
+Indexes {
+  (hashtag_id, related_hashtag_id) [pk]
+}
+}
+
+Table "STATISTIC"."user_cumulated_statistic" {
+  "user_id" bigint [not null]
+  "statistic_date" date [not null, note: 'Date the Statistics are referring to']
+  "cumulated_follower_count" integer [not null, note: 'Number of accounts that are following this account']
+  "cumulated_following_count" integer [not null, note: 'Number of accounts the account is following']
+  "cumulated_media_count" integer [not null]
+
+Indexes {
+  (statistic_date, user_id) [pk]
+}
+}
+
+Table "STATISTIC"."media_cumulated_statistic" {
+  "media_id" integer [not null]
+  "statistic_date" date [not null, note: 'Date the Statistics are referring to']
+  "cumulated_like_count" integer [not null, default: 0]
+  "cumulated_comment_count" integer [not null, default: 0]
+  "cumulated_play_count" integer [not null, default: 0]
+  "cumulated_view_count" integer [not null, default: 0]
+  "cumulated_mention_count" integer [not null, default: 0]
+
+Indexes {
+  (statistic_date, media_id) [pk]
+}
+}
+
+Table "STATISTIC"."story_cumulated_statistic" {
+  "story_id" integer [not null]
+  "statistic_date" date [not null, note: 'Date the Statistics are referring to']
+  "cumulated_like_count" integer [not null, default: 0]
+  "cumulated_comment_count" integer [not null, default: 0]
+  "cumulated_play_count" integer [not null, default: 0]
+  "cumulated_mention_count" integer [not null, default: 0]
+
+Indexes {
+  (statistic_date, story_id) [pk]
+}
+}
+
+Table "STATISTIC"."location_cumulated_statistic" {
+  "location_id" integer [not null]
+  "statistic_date" date [not null, note: 'Date the Statistics are referring to']
+  "cumulated_like_count" integer [not null, default: 0]
+
+Indexes {
+  (statistic_date, location_id) [pk]
+}
+}
+
+Table "STATISTIC"."hashtag_cumulated_statistic" {
+  "hashtag_id" integer [not null]
+  "statistic_date" date [not null, note: 'Date the Statistics are referring to']
+  "cumulated_media_count" integer [not null, default: 1]
+
+Indexes {
+  (statistic_date, hashtag_id) [pk]
+}
+}
+
+Ref:"USER"."user"."user_id" < "USER"."user_adress"."user_id" [update: cascade, delete: cascade]
+
+Ref:"USER"."user"."user_id" < "USER"."user_profile_setting"."user_id" [update: cascade, delete: cascade]
+
+Ref:"USER"."user"."user_id" < "USER"."user_contact_details"."user_id" [update: cascade, delete: cascade]
+
+Ref:"USER"."account_type"."account_type_id" < "USER"."user"."account_type_id" [update: cascade, delete: set null]
+
+Ref:"USER"."user"."user_id" < "USER"."follower"."user_id" [update: cascade, delete: cascade]
+
+Ref:"LOCATION"."location"."location_id" < "USER"."user_adress"."location_id"
+
+Ref:"USER"."user"."user_id" < "STATISTIC"."user_cumulated_statistic"."user_id" [update: cascade, delete: cascade]
+
+Ref:"LOCATION"."location"."location_id" < "LOCATION"."location_contact_details"."location_id" [update: cascade, delete: cascade]
+
+Ref:"LOCATION"."location"."location_id" < "STATISTIC"."location_cumulated_statistic"."location_id" [update: cascade, delete: cascade]
+
+Ref:"MEDIA"."media_type"."media_type_id" < "MEDIA"."media"."media_type_id" [update: cascade, delete: set null]
+
+Ref:"MEDIA"."media"."media_id" < "MEDIA"."media_sponsor"."media_id" [update: cascade, delete: cascade]
+
+Ref:"MEDIA"."media"."media_id" < "MEDIA"."media_hashtag"."media_id" [update: cascade, delete: cascade]
+
+Ref:"MEDIA"."media"."media_id" < "MEDIA"."media_usertag"."media_id" [update: cascade, delete: cascade]
+
+Ref:"MEDIA"."hashtag"."hashtag_id" < "MEDIA"."media_hashtag"."hashtag_id" [update: cascade, delete: cascade]
+
+Ref:"USER"."user"."user_id" < "MEDIA"."media_sponsor"."user_id" [update: cascade, delete: cascade]
+
+Ref:"USER"."user"."user_id" < "MEDIA"."media_usertag"."user_id" [update: cascade, delete: cascade]
+
+Ref:"MEDIA"."media"."media_id" < "STATISTIC"."media_cumulated_statistic"."media_id" [update: cascade, delete: cascade]
+
+Ref:"MEDIA"."media_type"."media_type_id" < "MEDIA"."story"."media_type_id" [update: cascade, delete: set null]
+
+Ref:"MEDIA"."story"."story_id" < "MEDIA"."story_mention"."story_id" [update: cascade, delete: cascade]
+
+Ref:"MEDIA"."story"."story_id" < "MEDIA"."story_location"."story_id" [update: cascade, delete: cascade]
+
+Ref:"MEDIA"."story"."story_id" < "MEDIA"."story_hashtag"."story_id" [update: cascade, delete: cascade]
+
+Ref:"USER"."user"."user_id" < "MEDIA"."story_mention"."user_id" [update: cascade, delete: cascade]
+
+Ref:"LOCATION"."location"."location_id" < "MEDIA"."story_location"."location_id" [update: cascade, delete: cascade]
+
+Ref:"MEDIA"."hashtag"."hashtag_id" < "MEDIA"."story_hashtag"."hashtag_id" [update: cascade, delete: cascade]
+
+Ref:"MEDIA"."story"."story_id" < "STATISTIC"."story_cumulated_statistic"."story_id" [update: cascade, delete: cascade]
+
+Ref:"MEDIA"."hashtag"."hashtag_id" < "MEDIA"."related_hashtag"."hashtag_id" [update: cascade, delete: cascade]
+
+Ref:"MEDIA"."hashtag"."hashtag_id" < "STATISTIC"."hashtag_cumulated_statistic"."hashtag_id" [update: cascade, delete: cascade]
