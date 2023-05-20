@@ -268,10 +268,17 @@ def user_data_to_df(
 
 @task
 def transform_user_profile_setting_data(df: pd.DataFrame) -> pd.DataFrame:
+    df["pk"] = df["pk"].astype("int64")
     df["has_bio"] = df["biography"].apply(lambda x: True if x[0] is not None else False)
     df["has_profile_pic"] = df["profile_pic_url"].apply(
         lambda x: True if x[0] is not None else False
     )
+    return df
+
+
+@task
+def transform_user_data(df: pd.DataFrame) -> pd.DataFrame:
+    df["pk"] = df["pk"].astype("int64")
     return df
 
 
@@ -282,7 +289,7 @@ def validate_transformed_user_data(transformed_user_df: pd.DataFrame):
 
     schema = pa.DataFrameSchema(
         {
-            "pk": pa.Column(dtype=str, unique=True, report_duplicates="exclude_last"),
+            "pk": pa.Column(dtype=int, unique=True, report_duplicates="exclude_last"),
             "username": pa.Column(
                 dtype=str,
                 unique=True,
@@ -309,7 +316,7 @@ def validate_transformed_user_profile_setting_data(transformed_user_df: pd.DataF
 
     schema = pa.DataFrameSchema(
         {
-            "pk": pa.Column(dtype=str, unique=True, report_duplicates="exclude_last"),
+            "pk": pa.Column(dtype=int, unique=True, report_duplicates="exclude_last"),
             "profile_pic_url": pa.Column(dtype=str),  # Probably should be nullable
             "profile_pic_url_hd": pa.Column(dtype=str, nullable=True),
             "has_profile_pic": pa.Column(dtype=bool),
@@ -452,6 +459,7 @@ def transform_user_data_flow(
 
     # Transformed data which will be stored in `USER.user` later on
     user_df = user_data_to_df(gcs_client, blobs, mapping.user_keys)
+    user_df = transform_user_data(user_df)
     validate_transformed_user_data(user_df)
     upload_transformed_user_data(gcs_client, user_df, "instagram-processed", "user")
 
@@ -502,8 +510,8 @@ if __name__ == "__main__":
         mapping=SourceToTargetKeyMapping(), processing_params=DataProcessingParams()
     )
 
-    # store_final_user_data_flow(
-    #     transformed_user_dfs=transformed_user_dfs,
-    #     database_block_name="instagram-prod-master-rw-user",
-    #     processing_params=DataProcessingParams(),
-    # )
+    store_final_user_data_flow(
+        transformed_user_dfs=transformed_user_dfs,
+        database_block_name="instagram-prod-master-rw-user",
+        processing_params=DataProcessingParams(),
+    )
