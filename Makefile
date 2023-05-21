@@ -26,7 +26,7 @@ enable_gcp_services:
 
 # Setup GCP Project, create Service account(s) and add policies
 setup_gcp_project:
-	@echo "Creating GCP service account..."
+# @echo "Creating GCP service account..."
 # gcloud projects delete $(CLOUDSDK_CORE_PROJECT)
 # gcloud projects create $(CLOUDSDK_CORE_PROJECT)
 # gcloud iam service-accounts create $(GCP_SA_NAME)
@@ -67,13 +67,10 @@ export_dependencies:
 	poetry export -o "requirements.txt" --without-hashes --without-urls
 
 build_docker_image:
-	docker build -t europe-west3-docker.pkg.dev/commoncrawl-383811/prefect-flows/hello-world-flow:2.10.4-python3.9 .
-	gcloud auth configure-docker europe-west3-docker.pkg.dev
-	docker push europe-west3-docker.pkg.dev/commoncrawl-383811/prefect-flows/hello-world-flow:2.10.4-python3.9
-
-copy_schema_to_vm:
-	# gcloud compute scp schema/final/instagram_db_v3.sql instagram-prod-master-rw:~/
-	
+# gcloud artifacts repositories create prefect-flows --location=$(CLOUDSDK_COMPUTE_REGION) --repository-format="DOCKER"
+	docker build -t $(CLOUDSDK_COMPUTE_REGION)-docker.pkg.dev/$(CLOUDSDK_CORE_PROJECT)/prefect-flows/$(HEALTHCHECK_FLOW_NAME):$(PREFECT_IMAGE_VERSION)-python$(PYTHON_VERSION) .
+	gcloud auth configure-docker $(CLOUDSDK_COMPUTE_REGION)-docker.pkg.dev
+	docker push $(CLOUDSDK_COMPUTE_REGION)-docker.pkg.dev/$(CLOUDSDK_CORE_PROJECT)/prefect-flows/$(HEALTHCHECK_FLOW_NAME):$(PREFECT_IMAGE_VERSION)-python$(PYTHON_VERSION)
 
 ##################### Documentation
 
