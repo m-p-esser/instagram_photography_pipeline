@@ -25,6 +25,7 @@ pandera = [
 prefect-sqlalchemy = "^0.2.4"
 pymysql = "^1.0.3"
 pillow = "^9.5.0"
+prefect-github = "^0.1.5"
 
 [tool.poetry.dev-dependencies]
 black = "*"
