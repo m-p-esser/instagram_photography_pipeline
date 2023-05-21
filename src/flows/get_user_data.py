@@ -298,7 +298,7 @@ def validate_transformed_user_data(transformed_user_df: pd.DataFrame):
             ),
             "full_name": pa.Column(dtype=str),
             "is_verified": pa.Column(dtype=bool),
-            "account_type": pa.Column(dtype=str, nullable=True),
+            "account_type": pa.Column(dtype=int, nullable=True),
             "is_business": pa.Column(dtype=bool),
             "business_category_name": pa.Column(dtype=str, nullable=True),
             "category_name": pa.Column(dtype=str, nullable=True),
