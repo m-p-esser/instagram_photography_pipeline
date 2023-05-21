@@ -8,14 +8,14 @@ CREATE SCHEMA `STATISTIC` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE `USER`.`user` (
   `user_id` bigint UNSIGNED PRIMARY KEY,
-  `account_type_id` int DEFAULT null,
-  `user_name` varchar(255) UNIQUE NOT NULL,
-  `full_name` varchar(255) DEFAULT null,
+  `account_type_id` int DEFAULT NULL,
+  `user_name` varchar(255) UNIQUE NULL,
+  `full_name` varchar(255) DEFAULT NULL,
   `is_verified` bool NOT NULL,
   `is_business` bool NOT NULL,
-  `business_category_name` varchar(255) DEFAULT null,
-  `category_name` varchar(255) DEFAULT null,
-  `category` varchar(255) DEFAULT null,
+  `business_category_name` varchar(255) DEFAULT NULL,
+  `category_name` varchar(255) DEFAULT NULL,
+  `category` varchar(255) DEFAULT NULL,
   `created_at` timestamp default CURRENT_TIMESTAMP NOT NULL COMMENT 'create time',
   `updated_at` datetime default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL COMMENT 'update time'
 );
@@ -35,31 +35,31 @@ CREATE TABLE `USER`.`user_profile_setting` (
 
 CREATE TABLE `USER`.`user_contact_details` (
   `user_id` bigint UNSIGNED PRIMARY KEY,
-  `contact_phone_number` varchar(255) DEFAULT null,
-  `public_phone_number` varchar(255) DEFAULT null,
-  `public_phone_country_code` varchar(255) DEFAULT null,
-  `business_contact_method` varchar(255) DEFAULT null,
-  `public_email` varchar(255) DEFAULT null,
+  `contact_phone_number` varchar(255) DEFAULT NULL,
+  `public_phone_number` varchar(255) DEFAULT NULL,
+  `public_phone_country_code` varchar(255) DEFAULT NULL,
+  `business_contact_method` varchar(255) DEFAULT NULL,
+  `public_email` varchar(255) DEFAULT NULL,
   `created_at` timestamp default CURRENT_TIMESTAMP NOT NULL COMMENT 'create time',
   `updated_at` datetime default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL COMMENT 'update time'
 );
 
 CREATE TABLE `USER`.`user_adress` (
   `user_id` bigint UNSIGNED PRIMARY KEY,
-  `location_id` integer,
-  `longitude` decimal(9,6) DEFAULT null,
-  `latitude` decimal(8,6) DEFAULT null,
-  `street` varchar(255) DEFAULT null,
-  `city` varchar(255) DEFAULT null,
-  `zip` varchar(255) DEFAULT null,
-  `country` varchar(255) DEFAULT null,
+  `location_id` integer UNSIGNED DEFAULT NULL,
+  `longitude` decimal(9,6) DEFAULT NULL,
+  `latitude` decimal(8,6) DEFAULT NULL,
+  `street` varchar(255) DEFAULT NULL,
+  `city` varchar(255) DEFAULT NULL,
+  `zip` varchar(255) DEFAULT NULL,
+  `country` varchar(255) DEFAULT NULL,
   `created_at` timestamp default CURRENT_TIMESTAMP NOT NULL COMMENT 'create time',
   `updated_at` datetime default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL COMMENT 'update time'
 );
 
 CREATE TABLE `USER`.`account_type` (
   `account_type_id` integer PRIMARY KEY,
-  `account_type` varchar(255) NOT NULL
+  `account_type` varchar(255) UNIQUE NOT NULL
 );
 
 CREATE TABLE `USER`.`follower` (
@@ -69,78 +69,78 @@ CREATE TABLE `USER`.`follower` (
 );
 
 CREATE TABLE `LOCATION`.`location` (
-  `location_id` integer PRIMARY KEY,
+  `location_id` integer UNSIGNED PRIMARY KEY,
   `name` varchar(255) NOT NULL,
-  `category` varchar(255) DEFAULT null,
-  `longitude` decimal(9,6) DEFAULT null,
-  `latitude` decimal(8,6) DEFAULT null,
-  `street` varchar(255) DEFAULT null,
-  `city` varchar(255) DEFAULT null,
-  `zip` varchar(255) DEFAULT null,
-  `country` varchar(255) DEFAULT null,
+  `category` varchar(255) DEFAULT NULL,
+  `longitude` decimal(9,6) DEFAULT NULL,
+  `latitude` decimal(8,6) DEFAULT NULL,
+  `street` varchar(255) DEFAULT NULL,
+  `city` varchar(255) DEFAULT NULL,
+  `zip` varchar(255) DEFAULT NULL,
+  `country` varchar(255) DEFAULT NULL,
   `created_at` timestamp default CURRENT_TIMESTAMP NOT NULL COMMENT 'create time',
   `updated_at` datetime default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL COMMENT 'update time'
 );
 
 CREATE TABLE `LOCATION`.`location_contact_details` (
-  `location_id` integer PRIMARY KEY,
-  `phone_number` varchar(255) DEFAULT null,
-  `opening_hours` varchar(255) DEFAULT null,
-  `website_url` varchar(768) DEFAULT null,
+  `location_id` integer UNSIGNED PRIMARY KEY,
+  `phone_number` varchar(255) DEFAULT NULL,
+  `opening_hours` varchar(255) DEFAULT NULL,
+  `website_url` varchar(768) DEFAULT NULL,
   `created_at` timestamp default CURRENT_TIMESTAMP NOT NULL COMMENT 'create time',
   `updated_at` datetime default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL COMMENT 'update time'
 );
 
 CREATE TABLE `MEDIA`.`story` (
-  `story_id` integer PRIMARY KEY,
-  `user_id` bigint UNSIGNED NOT NULL,
-  `media_id` integer NOT NULL,
-  `media_type_id` integer,
-  `thumbnail_url` varchar(768) DEFAULT null,
-  `video_url` varchar(768) DEFAULT null,
-  `video_duration_seconds` decimal(9,6) DEFAULT null,
-  `product_type` varchar(255) DEFAULT null,
+  `story_id` bigint UNSIGNED PRIMARY KEY,
+  `user_id` bigint UNSIGNED DEFAULT NULL,
+  `media_id` bigint UNSIGNED DEFAULT NULL,
+  `media_type_id` integer DEFAULT NULL,
+  `thumbnail_url` varchar(768) DEFAULT NULL,
+  `video_url` varchar(768) DEFAULT NULL,
+  `video_duration_seconds` decimal(9,6) DEFAULT NULL,
+  `product_type` varchar(255) DEFAULT NULL,
   `publication_datetime` datetime NOT NULL,
   `created_at` timestamp default CURRENT_TIMESTAMP NOT NULL COMMENT 'create time',
   `updated_at` datetime default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL COMMENT 'update time'
 );
 
 CREATE TABLE `MEDIA`.`story_mention` (
-  `story_id` integer NOT NULL,
+  `story_id` bigint UNSIGNED NOT NULL,
   `user_id` bigint UNSIGNED NOT NULL,
   `is_sponsor` bool NOT NULL DEFAULT False,
   PRIMARY KEY (`story_id`, `user_id`)
 );
 
 CREATE TABLE `MEDIA`.`story_location` (
-  `story_id` integer NOT NULL,
-  `location_id` integer NOT NULL,
+  `story_id` bigint UNSIGNED NOT NULL,
+  `location_id` integer UNSIGNED NOT NULL,
   PRIMARY KEY (`story_id`, `location_id`)
 );
 
 CREATE TABLE `MEDIA`.`story_hashtag` (
-  `story_id` integer NOT NULL,
-  `hashtag_id` integer NOT NULL,
+  `story_id` bigint UNSIGNED NOT NULL,
+  `hashtag_id` bigint UNSIGNED NOT NULL,
   PRIMARY KEY (`story_id`, `hashtag_id`)
 );
 
 CREATE TABLE `MEDIA`.`story_media` (
-  `story_id` integer NOT NULL,
-  `media_id` integer NOT NULL,
+  `story_id` bigint UNSIGNED NOT NULL,
+  `media_id` bigint UNSIGNED NOT NULL,
   PRIMARY KEY (`story_id`, `media_id`)
 );
 
 CREATE TABLE `MEDIA`.`media` (
-  `media_id` integer PRIMARY KEY,
-  `user_id` bigint UNSIGNED NOT NULL,
-  `location_id` integer,
-  `media_type_id` integer,
-  `title` varchar(255) DEFAULT null,
-  `caption` varchar(255) DEFAULT null,
-  `thumbnail_url` varchar(768) DEFAULT null,
-  `product_type` varchar(255) DEFAULT null,
-  `video_url` varchar(768) DEFAULT null,
-  `video_duration_seconds` decimal(9,6) DEFAULT null,
+  `media_id` bigint UNSIGNED PRIMARY KEY,
+  `user_id` bigint UNSIGNED DEFAULT NULL,
+  `location_id` integer UNSIGNED DEFAULT NULL,
+  `media_type_id` integer DEFAULT NULL,
+  `title` varchar(255) DEFAULT NULL,
+  `caption` varchar(255) DEFAULT NULL,
+  `thumbnail_url` varchar(768) DEFAULT NULL,
+  `product_type` varchar(255) DEFAULT NULL,
+  `video_url` varchar(768) DEFAULT NULL,
+  `video_duration_seconds` decimal(9,6) DEFAULT NULL,
   `has_comments_disabled` bool NOT NULL,
   `publication_datetime` datetime NOT NULL,
   `created_at` timestamp default CURRENT_TIMESTAMP NOT NULL COMMENT 'create time',
@@ -148,20 +148,20 @@ CREATE TABLE `MEDIA`.`media` (
 );
 
 CREATE TABLE `MEDIA`.`media_usertag` (
-  `media_id` integer NOT NULL,
-  `user_id` integer NOT NULL,
+  `media_id` bigint UNSIGNED NOT NULL,
+  `user_id` bigint UNSIGNED NOT NULL,
   PRIMARY KEY (`media_id`, `user_id`)
 );
 
 CREATE TABLE `MEDIA`.`media_hashtag` (
-  `media_id` integer NOT NULL,
-  `hashtag_id` integer NOT NULL,
+  `media_id` bigint UNSIGNED NOT NULL,
+  `hashtag_id` bigint UNSIGNED NOT NULL,
   PRIMARY KEY (`media_id`, `hashtag_id`)
 );
 
 CREATE TABLE `MEDIA`.`media_sponsor` (
-  `media_id` integer NOT NULL,
-  `user_id` integer NOT NULL,
+  `media_id` bigint UNSIGNED NOT NULL,
+  `user_id` bigint UNSIGNED NOT NULL,
   PRIMARY KEY (`media_id`, `user_id`)
 );
 
@@ -171,15 +171,15 @@ CREATE TABLE `MEDIA`.`media_type` (
 );
 
 CREATE TABLE `MEDIA`.`hashtag` (
-  `hashtag_id` integer PRIMARY KEY,
+  `hashtag_id` bigint UNSIGNED PRIMARY KEY,
   `hashtag_name` varchar(255) UNIQUE NOT NULL,
-  `profile_pic_url` varchar(768),
+  `profile_pic_url` varchar(768) DEFAULT NULL,
   `has_profile_pic` bool NOT NULL
 );
 
 CREATE TABLE `MEDIA`.`related_hashtag` (
-  `hashtag_id` integer NOT NULL,
-  `related_hashtag_id` integer,
+  `hashtag_id` bigint UNSIGNED NOT NULL,
+  `related_hashtag_id` bigint UNSIGNED NOT NULL,
   PRIMARY KEY (`hashtag_id`, `related_hashtag_id`)
 );
 
@@ -193,7 +193,7 @@ CREATE TABLE `STATISTIC`.`user_cumulated_statistic` (
 );
 
 CREATE TABLE `STATISTIC`.`media_cumulated_statistic` (
-  `media_id` integer NOT NULL,
+  `media_id` bigint UNSIGNED NOT NULL,
   `statistic_date` date NOT NULL COMMENT 'Date the Statistics are referring to',
   `cumulated_like_count` integer NOT NULL DEFAULT 0,
   `cumulated_comment_count` integer NOT NULL DEFAULT 0,
@@ -204,7 +204,7 @@ CREATE TABLE `STATISTIC`.`media_cumulated_statistic` (
 );
 
 CREATE TABLE `STATISTIC`.`story_cumulated_statistic` (
-  `story_id` integer NOT NULL,
+  `story_id` bigint UNSIGNED NOT NULL,
   `statistic_date` date NOT NULL COMMENT 'Date the Statistics are referring to',
   `cumulated_like_count` integer NOT NULL DEFAULT 0,
   `cumulated_comment_count` integer NOT NULL DEFAULT 0,
@@ -214,14 +214,14 @@ CREATE TABLE `STATISTIC`.`story_cumulated_statistic` (
 );
 
 CREATE TABLE `STATISTIC`.`location_cumulated_statistic` (
-  `location_id` integer NOT NULL,
+  `location_id` integer UNSIGNED NOT NULL,
   `statistic_date` date NOT NULL COMMENT 'Date the Statistics are referring to',
   `cumulated_like_count` integer NOT NULL DEFAULT 0,
   PRIMARY KEY (`statistic_date`, `location_id`)
 );
 
 CREATE TABLE `STATISTIC`.`hashtag_cumulated_statistic` (
-  `hashtag_id` integer NOT NULL,
+  `hashtag_id` bigint UNSIGNED NOT NULL,
   `statistic_date` date NOT NULL COMMENT 'Date the Statistics are referring to',
   `cumulated_media_count` integer NOT NULL DEFAULT 1,
   PRIMARY KEY (`statistic_date`, `hashtag_id`)

@@ -1,13 +1,13 @@
 Table "USER"."user" {
   "user_id" bigint [pk]
-  "account_type_id" int [default: null]
-  "user_name" varchar(255) [unique, not null]
-  "full_name" varchar(255) [default: null]
+  "account_type_id" int [default: NULL]
+  "user_name" varchar(255) [unique]
+  "full_name" varchar(255) [default: NULL]
   "is_verified" bool [not null]
   "is_business" bool [not null]
-  "business_category_name" varchar(255) [default: null]
-  "category_name" varchar(255) [default: null]
-  "category" varchar(255) [default: null]
+  "business_category_name" varchar(255) [default: NULL]
+  "category_name" varchar(255) [default: NULL]
+  "category" varchar(255) [default: NULL]
   "created_at" timestamp [not null, default: `CURRENT_TIMESTAMP`, note: 'create time']
   "updated_at" datetime [not null, default: `CURRENT_TIMESTAMP`, note: 'update time']
 
@@ -42,11 +42,11 @@ Indexes {
 
 Table "USER"."user_contact_details" {
   "user_id" bigint [pk]
-  "contact_phone_number" varchar(255) [default: null]
-  "public_phone_number" varchar(255) [default: null]
-  "public_phone_country_code" varchar(255) [default: null]
-  "business_contact_method" varchar(255) [default: null]
-  "public_email" varchar(255) [default: null]
+  "contact_phone_number" varchar(255) [default: NULL]
+  "public_phone_number" varchar(255) [default: NULL]
+  "public_phone_country_code" varchar(255) [default: NULL]
+  "business_contact_method" varchar(255) [default: NULL]
+  "public_email" varchar(255) [default: NULL]
   "created_at" timestamp [not null, default: `CURRENT_TIMESTAMP`, note: 'create time']
   "updated_at" datetime [not null, default: `CURRENT_TIMESTAMP`, note: 'update time']
 
@@ -58,13 +58,13 @@ Indexes {
 
 Table "USER"."user_adress" {
   "user_id" bigint [pk]
-  "location_id" integer
-  "longitude" decimal(9,6) [default: null]
-  "latitude" decimal(8,6) [default: null]
-  "street" varchar(255) [default: null]
-  "city" varchar(255) [default: null]
-  "zip" varchar(255) [default: null]
-  "country" varchar(255) [default: null]
+  "location_id" integer [default: NULL]
+  "longitude" decimal(9,6) [default: NULL]
+  "latitude" decimal(8,6) [default: NULL]
+  "street" varchar(255) [default: NULL]
+  "city" varchar(255) [default: NULL]
+  "zip" varchar(255) [default: NULL]
+  "country" varchar(255) [default: NULL]
   "created_at" timestamp [not null, default: `CURRENT_TIMESTAMP`, note: 'create time']
   "updated_at" datetime [not null, default: `CURRENT_TIMESTAMP`, note: 'update time']
 
@@ -78,7 +78,7 @@ Indexes {
 
 Table "USER"."account_type" {
   "account_type_id" integer [pk]
-  "account_type" varchar(255) [not null]
+  "account_type" varchar(255) [unique, not null]
 
 Indexes {
   account_type [unique, name: "account_type_index"]
@@ -97,13 +97,13 @@ Indexes {
 Table "LOCATION"."location" {
   "location_id" integer [pk]
   "name" varchar(255) [not null]
-  "category" varchar(255) [default: null]
-  "longitude" decimal(9,6) [default: null]
-  "latitude" decimal(8,6) [default: null]
-  "street" varchar(255) [default: null]
-  "city" varchar(255) [default: null]
-  "zip" varchar(255) [default: null]
-  "country" varchar(255) [default: null]
+  "category" varchar(255) [default: NULL]
+  "longitude" decimal(9,6) [default: NULL]
+  "latitude" decimal(8,6) [default: NULL]
+  "street" varchar(255) [default: NULL]
+  "city" varchar(255) [default: NULL]
+  "zip" varchar(255) [default: NULL]
+  "country" varchar(255) [default: NULL]
   "created_at" timestamp [not null, default: `CURRENT_TIMESTAMP`, note: 'create time']
   "updated_at" datetime [not null, default: `CURRENT_TIMESTAMP`, note: 'update time']
 
@@ -117,9 +117,9 @@ Indexes {
 
 Table "LOCATION"."location_contact_details" {
   "location_id" integer [pk]
-  "phone_number" varchar(255) [default: null]
-  "opening_hours" varchar(255) [default: null]
-  "website_url" varchar(768) [default: null]
+  "phone_number" varchar(255) [default: NULL]
+  "opening_hours" varchar(255) [default: NULL]
+  "website_url" varchar(768) [default: NULL]
   "created_at" timestamp [not null, default: `CURRENT_TIMESTAMP`, note: 'create time']
   "updated_at" datetime [not null, default: `CURRENT_TIMESTAMP`, note: 'update time']
 
@@ -130,14 +130,14 @@ Indexes {
 }
 
 Table "MEDIA"."story" {
-  "story_id" integer [pk]
-  "user_id" bigint [not null]
-  "media_id" integer [not null]
-  "media_type_id" integer
-  "thumbnail_url" varchar(768) [default: null]
-  "video_url" varchar(768) [default: null]
-  "video_duration_seconds" decimal(9,6) [default: null]
-  "product_type" varchar(255) [default: null]
+  "story_id" bigint [pk]
+  "user_id" bigint [default: NULL]
+  "media_id" bigint [default: NULL]
+  "media_type_id" integer [default: NULL]
+  "thumbnail_url" varchar(768) [default: NULL]
+  "video_url" varchar(768) [default: NULL]
+  "video_duration_seconds" decimal(9,6) [default: NULL]
+  "product_type" varchar(255) [default: NULL]
   "publication_datetime" datetime [not null]
   "created_at" timestamp [not null, default: `CURRENT_TIMESTAMP`, note: 'create time']
   "updated_at" datetime [not null, default: `CURRENT_TIMESTAMP`, note: 'update time']
@@ -154,7 +154,7 @@ Indexes {
 }
 
 Table "MEDIA"."story_mention" {
-  "story_id" integer [not null]
+  "story_id" bigint [not null]
   "user_id" bigint [not null]
   "is_sponsor" bool [not null, default: False]
 
@@ -164,7 +164,7 @@ Indexes {
 }
 
 Table "MEDIA"."story_location" {
-  "story_id" integer [not null]
+  "story_id" bigint [not null]
   "location_id" integer [not null]
 
 Indexes {
@@ -173,8 +173,8 @@ Indexes {
 }
 
 Table "MEDIA"."story_hashtag" {
-  "story_id" integer [not null]
-  "hashtag_id" integer [not null]
+  "story_id" bigint [not null]
+  "hashtag_id" bigint [not null]
 
 Indexes {
   (story_id, hashtag_id) [pk]
@@ -182,8 +182,8 @@ Indexes {
 }
 
 Table "MEDIA"."story_media" {
-  "story_id" integer [not null]
-  "media_id" integer [not null]
+  "story_id" bigint [not null]
+  "media_id" bigint [not null]
 
 Indexes {
   (story_id, media_id) [pk]
@@ -191,16 +191,16 @@ Indexes {
 }
 
 Table "MEDIA"."media" {
-  "media_id" integer [pk]
-  "user_id" bigint [not null]
-  "location_id" integer
-  "media_type_id" integer
-  "title" varchar(255) [default: null]
-  "caption" varchar(255) [default: null]
-  "thumbnail_url" varchar(768) [default: null]
-  "product_type" varchar(255) [default: null]
-  "video_url" varchar(768) [default: null]
-  "video_duration_seconds" decimal(9,6) [default: null]
+  "media_id" bigint [pk]
+  "user_id" bigint [default: NULL]
+  "location_id" integer [default: NULL]
+  "media_type_id" integer [default: NULL]
+  "title" varchar(255) [default: NULL]
+  "caption" varchar(255) [default: NULL]
+  "thumbnail_url" varchar(768) [default: NULL]
+  "product_type" varchar(255) [default: NULL]
+  "video_url" varchar(768) [default: NULL]
+  "video_duration_seconds" decimal(9,6) [default: NULL]
   "has_comments_disabled" bool [not null]
   "publication_datetime" datetime [not null]
   "created_at" timestamp [not null, default: `CURRENT_TIMESTAMP`, note: 'create time']
@@ -218,8 +218,8 @@ Indexes {
 }
 
 Table "MEDIA"."media_usertag" {
-  "media_id" integer [not null]
-  "user_id" integer [not null]
+  "media_id" bigint [not null]
+  "user_id" bigint [not null]
 
 Indexes {
   (media_id, user_id) [pk]
@@ -227,8 +227,8 @@ Indexes {
 }
 
 Table "MEDIA"."media_hashtag" {
-  "media_id" integer [not null]
-  "hashtag_id" integer [not null]
+  "media_id" bigint [not null]
+  "hashtag_id" bigint [not null]
 
 Indexes {
   (media_id, hashtag_id) [pk]
@@ -236,8 +236,8 @@ Indexes {
 }
 
 Table "MEDIA"."media_sponsor" {
-  "media_id" integer [not null]
-  "user_id" integer [not null]
+  "media_id" bigint [not null]
+  "user_id" bigint [not null]
 
 Indexes {
   (media_id, user_id) [pk]
@@ -254,9 +254,9 @@ Indexes {
 }
 
 Table "MEDIA"."hashtag" {
-  "hashtag_id" integer [pk]
+  "hashtag_id" bigint [pk]
   "hashtag_name" varchar(255) [unique, not null]
-  "profile_pic_url" varchar(768)
+  "profile_pic_url" varchar(768) [default: NULL]
   "has_profile_pic" bool [not null]
 
 Indexes {
@@ -266,8 +266,8 @@ Indexes {
 }
 
 Table "MEDIA"."related_hashtag" {
-  "hashtag_id" integer [not null]
-  "related_hashtag_id" integer
+  "hashtag_id" bigint [not null]
+  "related_hashtag_id" bigint [not null]
 
 Indexes {
   (hashtag_id, related_hashtag_id) [pk]
@@ -287,7 +287,7 @@ Indexes {
 }
 
 Table "STATISTIC"."media_cumulated_statistic" {
-  "media_id" integer [not null]
+  "media_id" bigint [not null]
   "statistic_date" date [not null, note: 'Date the Statistics are referring to']
   "cumulated_like_count" integer [not null, default: 0]
   "cumulated_comment_count" integer [not null, default: 0]
@@ -301,7 +301,7 @@ Indexes {
 }
 
 Table "STATISTIC"."story_cumulated_statistic" {
-  "story_id" integer [not null]
+  "story_id" bigint [not null]
   "statistic_date" date [not null, note: 'Date the Statistics are referring to']
   "cumulated_like_count" integer [not null, default: 0]
   "cumulated_comment_count" integer [not null, default: 0]
@@ -324,7 +324,7 @@ Indexes {
 }
 
 Table "STATISTIC"."hashtag_cumulated_statistic" {
-  "hashtag_id" integer [not null]
+  "hashtag_id" bigint [not null]
   "statistic_date" date [not null, note: 'Date the Statistics are referring to']
   "cumulated_media_count" integer [not null, default: 1]
 
