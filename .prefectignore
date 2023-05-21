@@ -1,3 +1,45 @@
+# prefect artifacts
+.prefectignore
+
+# python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+*.egg
+
+# Type checking artifacts
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+
+# IPython
+profile_default/
+ipython_config.py
+*.ipynb_checkpoints/*
+
+# Environments
+.python-version
+.env
+.venv
+env/
+venv/
+
+# MacOS
+.DS_Store
+
+# Dask
+dask-worker-space/
+
+# Editors
+.idea/
+.vscode/
+
+# VCS
+.git/
+.hg/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -22,7 +64,7 @@ sdist/
 var/
 *.egg-info/
 .installed.cfg
-*.egg'
+*.egg
 venv
 
 # PyInstaller
@@ -95,8 +137,6 @@ data/*/*
 models/*
 !.gitkeep
 /data
-/data_profile
-temp
 
 # Hydra
 outputs/*
@@ -105,8 +145,34 @@ outputs/*
 deployments
 deployments/*
 
-# Credentials
-credentials
+# Commands
+*/commands/*
+commands/*
+src/commands/*
 
-# Notebooks
-*.ipynb
+# Git
+.gitignore
+.github/*
+.flake8
+.pre-commit-config.yaml
+
+# Custom
+Makefile
+
+# Docs and Examples
+docs/
+images/
+models
+
+# Credentials
+credentials/*
+
+# Markdown files
+README.md
+
+# Poetry
+poetry.lock
+pyproject.toml
+
+# Testing
+tests/*
